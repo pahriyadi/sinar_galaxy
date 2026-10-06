@@ -103,6 +103,8 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,700;1,800&family=Montserrat:wght@700;800;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     /* ==========================================================================
@@ -1068,12 +1070,21 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       </div>
     </div>
 
-    <!-- Print Action Buttons -->
-    <div style="display: flex; gap: 8px;">
-      <button onclick="window.print()" class="action-btn btn-print">
+    <!-- Share & Print Action Buttons -->
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <button type="button" onclick="kirimWhatsAppTiket()" class="action-btn" style="background: #25D366; color: #ffffff; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);" title="Kirim file gambar tiket & link tiket resmi ke WhatsApp pelanggan">
+        <i class="fab fa-whatsapp" style="font-size: 15px;"></i> Kirim ke WhatsApp
+      </button>
+      <button type="button" onclick="downloadGambarTiket()" class="action-btn" style="background: #0284c7; color: #ffffff;" title="Download tiket dalam format gambar resolusi tinggi (PNG)">
+        <i class="fas fa-file-image"></i> Simpan Gambar (PNG)
+      </button>
+      <button type="button" onclick="downloadPDFTiket()" class="action-btn" style="background: #dc2626; color: #ffffff;" title="Download dokumen PDF resmi">
+        <i class="fas fa-file-pdf"></i> Download PDF
+      </button>
+      <button type="button" onclick="window.print()" class="action-btn btn-print">
         <i class="fas fa-print"></i> Cetak Tiket
       </button>
-      <button onclick="window.close()" class="action-btn btn-close-window">
+      <button type="button" onclick="window.close()" class="action-btn btn-close-window">
         <i class="fas fa-times"></i> Tutup
       </button>
     </div>
@@ -1167,7 +1178,18 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     <!-- ====================================================================
          1. TEMPLATE A4 WARNA RESMI (IDENTIK DENGAN GAMBAR KLIEN)
          ==================================================================== -->
-    <div class="ticket-sheet">
+    <div class="ticket-sheet" id="ticket_sheet_<?= $idx ?>" 
+         data-ticket-idx="<?= $idx ?>" 
+         data-phone="<?= htmlspecialchars(preg_replace('/[^0-9]/', '', $noHp)) ?>" 
+         data-nama="<?= htmlspecialchars($namaPenumpang) ?>" 
+         data-tiket="<?= htmlspecialchars($noTiket) ?>" 
+         data-tujuan="<?= htmlspecialchars($kotaTujuan) ?>" 
+         data-tgl="<?= htmlspecialchars($tglBerangkatDisplay) ?>" 
+         data-jam="<?= htmlspecialchars($jamTeksDisplay) ?>" 
+         data-kursi="<?= htmlspecialchars($noKursi) ?>" 
+         data-plat="<?= htmlspecialchars($noPlat) ?>" 
+         data-harga="<?= htmlspecialchars($hargaTiketDisplay) ?>" 
+         data-id="<?= $idPemesanan ?>">
       
       <!-- SLIP 1: TIKET PENUMPANG UTAMA (ATAS) -->
       <div class="ticket-card-top">
@@ -1388,13 +1410,39 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
         </div>
       </div>
 
+      <!-- Quick Action Per Tiket (Hanya tampil di layar jika ada lebih dari 1 tiket) -->
+      <?php if (count($tickets) > 1): ?>
+      <div class="no-print" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: -6px; margin-bottom: 10px;">
+        <button type="button" onclick="kirimWhatsAppTiket(<?= $idx ?>)" class="action-btn" style="background: #25D366; color: #fff; font-size: 11px; padding: 4px 10px;">
+          <i class="fab fa-whatsapp"></i> Kirim WA Tiket Ini
+        </button>
+        <button type="button" onclick="downloadGambarTiket(<?= $idx ?>)" class="action-btn" style="background: #0284c7; color: #fff; font-size: 11px; padding: 4px 10px;">
+          <i class="fas fa-image"></i> Simpan Gambar
+        </button>
+        <button type="button" onclick="downloadPDFTiket(<?= $idx ?>)" class="action-btn" style="background: #dc2626; color: #fff; font-size: 11px; padding: 4px 10px;">
+          <i class="fas fa-file-pdf"></i> Unduh PDF
+        </button>
+      </div>
+      <?php endif; ?>
+
     </div>
 
 
     <!-- ====================================================================
          2. TEMPLATE THERMAL 80MM (OPTIMAL UNTUK PRINTER KASIR POS 80MM)
          ==================================================================== -->
-    <div class="thermal-wrapper mode-80">
+    <div class="thermal-wrapper mode-80" id="thermal_80_<?= $idx ?>"
+         data-ticket-idx="<?= $idx ?>" 
+         data-phone="<?= htmlspecialchars(preg_replace('/[^0-9]/', '', $noHp)) ?>" 
+         data-nama="<?= htmlspecialchars($namaPenumpang) ?>" 
+         data-tiket="<?= htmlspecialchars($noTiket) ?>" 
+         data-tujuan="<?= htmlspecialchars($kotaTujuan) ?>" 
+         data-tgl="<?= htmlspecialchars($tglBerangkatDisplay) ?>" 
+         data-jam="<?= htmlspecialchars($jamTeksDisplay) ?>" 
+         data-kursi="<?= htmlspecialchars($noKursi) ?>" 
+         data-plat="<?= htmlspecialchars($noPlat) ?>" 
+         data-harga="<?= htmlspecialchars($hargaTiketDisplay) ?>" 
+         data-id="<?= $idPemesanan ?>">
       <div class="thermal-header">
         <div class="th-brand">SINAR GALAXY TRAVEL</div>
         <div class="th-sub">BUS AKAP / AKDP & TRAVEL EXECUTIVE</div>
@@ -1507,7 +1555,18 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     <!-- ====================================================================
          3. TEMPLATE THERMAL 58MM (OPTIMAL UNTUK MINI MOBILE PRINTER 58MM)
          ==================================================================== -->
-    <div class="thermal-wrapper mode-58">
+    <div class="thermal-wrapper mode-58" id="thermal_58_<?= $idx ?>"
+         data-ticket-idx="<?= $idx ?>" 
+         data-phone="<?= htmlspecialchars(preg_replace('/[^0-9]/', '', $noHp)) ?>" 
+         data-nama="<?= htmlspecialchars($namaPenumpang) ?>" 
+         data-tiket="<?= htmlspecialchars($noTiket) ?>" 
+         data-tujuan="<?= htmlspecialchars($kotaTujuan) ?>" 
+         data-tgl="<?= htmlspecialchars($tglBerangkatDisplay) ?>" 
+         data-jam="<?= htmlspecialchars($jamTeksDisplay) ?>" 
+         data-kursi="<?= htmlspecialchars($noKursi) ?>" 
+         data-plat="<?= htmlspecialchars($noPlat) ?>" 
+         data-harga="<?= htmlspecialchars($hargaTiketDisplay) ?>" 
+         data-id="<?= $idPemesanan ?>">
       <div class="thermal-header">
         <div class="th-brand">SINAR GALAXY</div>
         <div class="th-sub">TRAVEL & BUS AKAP/AKDP</div>
@@ -1640,7 +1699,286 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
 
   <?php endif; ?>
 
+  <!-- Loading Toast & Notification Container -->
+  <div id="sgt_toast" style="display: none; position: fixed; bottom: 25px; right: 25px; z-index: 99999; background: #0b3b7b; color: #fff; padding: 14px 22px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); font-size: 13px; font-weight: 700; align-items: center; gap: 10px; max-width: 380px;">
+    <i class="fas fa-spinner fa-spin" id="sgt_toast_icon" style="font-size: 18px; color: #ffb703;"></i>
+    <span id="sgt_toast_msg">Sedang memproses...</span>
+  </div>
+
   <script>
+    // Helper Toast
+    function showToast(msg, iconClass = 'fa-spinner fa-spin', duration = 4000) {
+      const toast = document.getElementById('sgt_toast');
+      const icon = document.getElementById('sgt_toast_icon');
+      const text = document.getElementById('sgt_toast_msg');
+      if (!toast) return;
+      
+      icon.className = 'fas ' + iconClass;
+      text.innerHTML = msg;
+      toast.style.display = 'flex';
+
+      if (duration > 0) {
+        setTimeout(function() {
+          toast.style.display = 'none';
+        }, duration);
+      }
+    }
+
+    function hideToast() {
+      const toast = document.getElementById('sgt_toast');
+      if (toast) toast.style.display = 'none';
+    }
+
+    // Mendapatkan format yang sedang aktif
+    function getActiveFormat() {
+      if (document.body.classList.contains('view-format-thermal80')) return 'thermal80';
+      if (document.body.classList.contains('view-format-thermal58')) return 'thermal58';
+      return 'a4';
+    }
+
+    // Mendapatkan element target tiket sesuai mode aktif
+    function getTargetElement(targetIdx = 0) {
+      const format = getActiveFormat();
+      if (format === 'thermal80') {
+        return document.getElementById('thermal_80_' + targetIdx);
+      } else if (format === 'thermal58') {
+        return document.getElementById('thermal_58_' + targetIdx);
+      } else {
+        return document.getElementById('ticket_sheet_' + targetIdx);
+      }
+    }
+
+    // Format nomor WhatsApp ke standar internasional 62xxx
+    function formatWhatsAppNumber(phone) {
+      if (!phone) return '';
+      let clean = phone.replace(/[^0-9]/g, '');
+      if (clean.startsWith('0')) {
+        clean = '62' + clean.substring(1);
+      } else if (clean.startsWith('8')) {
+        clean = '62' + clean;
+      }
+      return clean;
+    }
+
+    // Format teks pesan WhatsApp resmi
+    function buildWhatsAppMessage(data) {
+      const baseSiteUrl = window.location.origin + window.location.pathname.replace('/cetak_etiket.php', '');
+      const digitalTicketUrl = window.location.origin + window.location.pathname + '?id=' + data.id + '&format=' + getActiveFormat();
+
+      return `*E-TIKET RESMI SINAR GALAXY TRAVEL*\n` +
+             `-------------------------------------------\n` +
+             `Halo Bapak/Ibu *${data.nama}*,\n` +
+             `Terima kasih telah memesan tiket perjalanan bersama *Sinar Galaxy Travel*.\n\n` +
+             `*DETAIL TIKET PERJALANAN:*\n` +
+             `🎟 *No. Tiket* : *${data.tiket}*\n` +
+             `👤 *Penumpang* : ${data.nama}\n` +
+             `💺 *No. Kursi* : *KURSI ${data.kursi}*\n` +
+             `📍 *Tujuan* : *${data.tujuan}*\n` +
+             `🗓 *Jadwal* : ${data.tgl}\n` +
+             `⏰ *Waktu* : *${data.jam}*\n` +
+             `🚌 *Armada* : ${data.plat}\n` +
+             `💰 *Tarif* : ${data.harga}\n` +
+             `✅ *Status* : *LUNAS*\n\n` +
+             `🔗 *Lihat / Unduh E-Tiket Digital:*\n${digitalTicketUrl}\n\n` +
+             `_Catatan: Harap tiba di titik keberangkatan 30 menit sebelum jadwal. Simpan pesan dan tiket ini sebagai bukti sah._\n\n` +
+             `*Customer Care PO Sumbawa:* 081763333330\n` +
+             `*Customer Care PO Mataram:* 082339860600\n` +
+             `*Website Resmi:* https://sinargalaxy.my.id`;
+    }
+
+    // =========================================================================
+    // FITUR 1: KIRIM / SHARE TIKET KE WHATSAPP (GAMBAR LANGSUNG / PDF / LINK)
+    // =========================================================================
+    async function kirimWhatsAppTiket(targetIdx = 0) {
+      const sheet = document.getElementById('ticket_sheet_' + targetIdx);
+      if (!sheet) {
+        alert('Data tiket tidak ditemukan.');
+        return;
+      }
+
+      const data = {
+        idx: targetIdx,
+        id: sheet.dataset.id,
+        nama: sheet.dataset.nama,
+        phone: sheet.dataset.phone,
+        tiket: sheet.dataset.tiket,
+        tujuan: sheet.dataset.tujuan,
+        tgl: sheet.dataset.tgl,
+        jam: sheet.dataset.jam,
+        kursi: sheet.dataset.kursi,
+        plat: sheet.dataset.plat,
+        harga: sheet.dataset.harga
+      };
+
+      const waPhone = formatWhatsAppNumber(data.phone);
+      const waMessage = buildWhatsAppMessage(data);
+      const elem = getTargetElement(targetIdx);
+
+      showToast('Menyiapkan gambar E-Tiket untuk WhatsApp...', 'fa-circle-notch fa-spin', 0);
+
+      try {
+        // Render element ke canvas PNG
+        const canvas = await html2canvas(elem, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
+
+        // Konversi canvas ke Blob
+        canvas.toBlob(async function(blob) {
+          if (!blob) {
+            hideToast();
+            openWhatsAppLink(waPhone, waMessage);
+            return;
+          }
+
+          const fileName = `E-Tiket_${data.tiket.replace(/\s+/g, '_')}_${data.nama.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+          const file = new File([blob], fileName, { type: 'image/png' });
+
+          // Cek apakah browser / device mendukung Web Share API File Sharing (Android / iOS / Modern Chrome)
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            hideToast();
+            try {
+              await navigator.share({
+                files: [file],
+                title: 'E-Tiket Sinar Galaxy - ' + data.tiket,
+                text: waMessage
+              });
+              showToast('Tiket berhasil dibagikan!', 'fa-check-circle', 3000);
+              return;
+            } catch (shareErr) {
+              if (shareErr.name !== 'AbortError') {
+                console.warn('Share error fallback:', shareErr);
+              }
+            }
+          }
+
+          // Fallback untuk Desktop / Browser yang tidak mendukung direct file share:
+          // 1. Download file gambar PNG ke perangkat kasir
+          const imgUrl = URL.createObjectURL(blob);
+          const downloadLink = document.createElement('a');
+          downloadLink.href = imgUrl;
+          downloadLink.download = fileName;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+
+          hideToast();
+          showToast('Gambar tiket diunduh! Membuka WhatsApp...', 'fa-whatsapp', 3500);
+
+          // 2. Buka chat WhatsApp Web / WhatsApp Desktop dengan pesan terformat
+          setTimeout(function() {
+            openWhatsAppLink(waPhone, waMessage);
+          }, 800);
+
+        }, 'image/png');
+
+      } catch (err) {
+        console.error('Error render canvas:', err);
+        hideToast();
+        openWhatsAppLink(waPhone, waMessage);
+      }
+    }
+
+    function openWhatsAppLink(phone, message) {
+      let waUrl = '';
+      const encodedMsg = encodeURIComponent(message);
+      if (phone && phone.length >= 8) {
+        waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`;
+      } else {
+        waUrl = `https://api.whatsapp.com/send?text=${encodedMsg}`;
+      }
+      window.open(waUrl, '_blank');
+    }
+
+    // =========================================================================
+    // FITUR 2: DOWNLOAD TIKET SEBAGAI GAMBAR PNG RESOLUSI TINGGI
+    // =========================================================================
+    async function downloadGambarTiket(targetIdx = 0) {
+      const sheet = document.getElementById('ticket_sheet_' + targetIdx);
+      if (!sheet) {
+        alert('Data tiket tidak ditemukan.');
+        return;
+      }
+
+      const nama = sheet.dataset.nama || 'Penumpang';
+      const tiket = sheet.dataset.tiket || 'SGT';
+      const elem = getTargetElement(targetIdx);
+
+      showToast('Merender gambar tiket resolusi tinggi...', 'fa-spinner fa-spin', 0);
+
+      try {
+        const canvas = await html2canvas(elem, {
+          scale: 2.5,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const fileName = `E-Tiket_${tiket.replace(/\s+/g, '_')}_${nama.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+
+        const link = document.createElement('a');
+        link.href = imgData;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        hideToast();
+        showToast('Gambar PNG tiket berhasil disimpan!', 'fa-check-circle', 3000);
+      } catch (e) {
+        console.error('Download image error:', e);
+        hideToast();
+        alert('Gagal mendownload gambar tiket: ' + e.message);
+      }
+    }
+
+    // =========================================================================
+    // FITUR 3: DOWNLOAD TIKET SEBAGAI DOKUMEN PDF RESMI
+    // =========================================================================
+    async function downloadPDFTiket(targetIdx = 0) {
+      const sheet = document.getElementById('ticket_sheet_' + targetIdx);
+      if (!sheet) {
+        alert('Data tiket tidak ditemukan.');
+        return;
+      }
+
+      const nama = sheet.dataset.nama || 'Penumpang';
+      const tiket = sheet.dataset.tiket || 'SGT';
+      const format = getActiveFormat();
+      const elem = getTargetElement(targetIdx);
+
+      showToast('Menyusun file PDF E-Tiket...', 'fa-file-pdf', 0);
+
+      let pdfOptions = {
+        margin: [4, 4, 4, 4],
+        filename: `E-Tiket_${tiket.replace(/\s+/g, '_')}_${nama.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (format === 'thermal80') {
+        pdfOptions.margin = [2, 2, 2, 2];
+        pdfOptions.jsPDF = { unit: 'mm', format: [80, 240], orientation: 'portrait' };
+      } else if (format === 'thermal58') {
+        pdfOptions.margin = [2, 2, 2, 2];
+        pdfOptions.jsPDF = { unit: 'mm', format: [58, 200], orientation: 'portrait' };
+      }
+
+      try {
+        await html2pdf().set(pdfOptions).from(elem).save();
+        hideToast();
+        showToast('Dokumen PDF berhasil diunduh!', 'fa-check-circle', 3000);
+      } catch (err) {
+        console.error('PDF error:', err);
+        hideToast();
+        alert('Gagal membuat PDF: ' + err.message);
+      }
+    }
+
     // Fungsi switch format kertas secara interaktif
     function switchFormat(format) {
       document.body.className = 'view-format-' + format;
@@ -1649,7 +1987,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       document.querySelectorAll('.format-btn').forEach(function(btn) {
         btn.classList.remove('active');
       });
-      event.currentTarget.classList.add('active');
+      if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add('active');
+      }
 
       // Update URL param tanpa reload halaman
       const url = new URL(window.location);
