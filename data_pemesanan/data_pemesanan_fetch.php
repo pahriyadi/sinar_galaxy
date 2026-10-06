@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // Jika request untuk 1 ID, kembalikan data detail terlebih dahulu
 if (isset($_GET['id_pemesanan'])) {
     require_once '../inc/koneksi.php';

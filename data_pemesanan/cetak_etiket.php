@@ -23,7 +23,7 @@ if (!empty($id_pemesanan)) {
                        tj.nama_tujuan,
                        sp.status_pembayaran,
                        mp.metode_pembayaran,
-                       dr.nama_rekening, dr.no_rekening, dr.atas_nama,
+                       dr.nama_rekening, dr.nomor_rekening,
                        du.username as nama_kasir, du.asal_po as asal_po_kasir
                 FROM data_pemesanan pm
                 LEFT JOIN data_travel dt ON pm.no_plat_id = dt.no_plat
@@ -50,7 +50,7 @@ if (!empty($id_pemesanan)) {
                    tj.nama_tujuan,
                    sp.status_pembayaran,
                    mp.metode_pembayaran,
-                   dr.nama_rekening, dr.no_rekening, dr.atas_nama,
+                   dr.nama_rekening, dr.nomor_rekening,
                    du.username as nama_kasir, du.asal_po as asal_po_kasir
             FROM data_pemesanan pm
             LEFT JOIN data_travel dt ON pm.no_plat_id = dt.no_plat
@@ -72,15 +72,15 @@ if (!empty($id_pemesanan)) {
 // Master mapping jika dibutuhkan fallback
 $tujuanMap = [];
 $res = mysqli_query($conn, "SELECT id_tujuan_perjalanan, nama_tujuan FROM data_tujuan_perjalanan");
-while ($r = mysqli_fetch_assoc($res)) { $tujuanMap[$r['id_tujuan_perjalanan']] = $r['nama_tujuan']; }
+if ($res) { while ($r = mysqli_fetch_assoc($res)) { $tujuanMap[$r['id_tujuan_perjalanan']] = $r['nama_tujuan']; } }
 
 $metodeMap = [];
 $res = mysqli_query($conn, "SELECT id_metode_pembayaran, metode_pembayaran FROM data_metode_pembayaran");
-while ($r = mysqli_fetch_assoc($res)) { $metodeMap[$r['id_metode_pembayaran']] = $r['metode_pembayaran']; }
+if ($res) { while ($r = mysqli_fetch_assoc($res)) { $metodeMap[$r['id_metode_pembayaran']] = $r['metode_pembayaran']; } }
 
 $rekeningMap = [];
-$res = mysqli_query($conn, "SELECT id_rekening, nama_rekening, no_rekening, atas_nama FROM data_rekening");
-while ($r = mysqli_fetch_assoc($res)) { $rekeningMap[$r['id_rekening']] = $r; }
+$res = mysqli_query($conn, "SELECT * FROM data_rekening");
+if ($res) { while ($r = mysqli_fetch_assoc($res)) { $rekeningMap[$r['id_rekening']] = $r; } }
 
 // Logo paths
 $appLogo = '../img/logo_sgt.png';
