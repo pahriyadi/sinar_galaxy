@@ -1176,6 +1176,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       
       $catatan = !empty($t['keterangan']) ? $t['keterangan'] : (!empty($t['alamat_id']) ? 'Jemput: ' . $t['alamat_id'] : 'Armada: ' . $noPlat . ' / ' . $kelasTravel);
 
+      // Format Token Publik Aman
+      $tiketToken = generateTiketToken($idPemesanan);
+      
       // QR Code Content
       $qrData = "SINAR GALAXY TRAVEL | TIKET: " . $noTiket . " | NAMA: " . $namaPenumpang . " | KURSI: " . $noKursi . " | TUJUAN: " . $kotaTujuan . " | TGL: " . $tglBerangkatDisplay . " | STATUS: LUNAS";
     ?>
@@ -1194,7 +1197,8 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
          data-kursi="<?= htmlspecialchars($noKursi) ?>" 
          data-plat="<?= htmlspecialchars($noPlat) ?>" 
          data-harga="<?= htmlspecialchars($hargaTiketDisplay) ?>" 
-         data-id="<?= $idPemesanan ?>">
+         data-id="<?= $idPemesanan ?>"
+         data-token="<?= htmlspecialchars($tiketToken) ?>">
       
       <!-- SLIP 1: TIKET PENUMPANG UTAMA (ATAS) -->
       <div class="ticket-card-top">
@@ -1765,10 +1769,19 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       return clean;
     }
 
-    // Format teks pesan WhatsApp resmi
+    // Format teks pesan WhatsApp resmi dengan tautan publik terverifikasi token
     function buildWhatsAppMessage(data) {
-      const baseSiteUrl = window.location.origin + window.location.pathname.replace('/cetak_etiket.php', '');
-      const digitalTicketUrl = window.location.origin + window.location.pathname + '?id=' + data.id + '&format=' + getActiveFormat();
+      // Buat URL E-Tiket publik aman
+      const currentOrigin = window.location.origin;
+      const currentPath = window.location.pathname;
+      
+      let publicUrl = '';
+      if (currentPath.includes('/data_pemesanan/')) {
+        const basePath = currentPath.substring(0, currentPath.indexOf('/data_pemesanan/'));
+        publicUrl = currentOrigin + basePath + '/e-tiket/pelanggan?id=' + data.id + (data.token ? '&token=' + data.token : '');
+      } else {
+        publicUrl = currentOrigin + '/e-tiket/pelanggan?id=' + data.id + (data.token ? '&token=' + data.token : '');
+      }
 
       return `*E-TIKET RESMI SINAR GALAXY TRAVEL*\n` +
              `-------------------------------------------\n` +
@@ -1784,7 +1797,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
              `🚌 *Armada* : ${data.plat}\n` +
              `💰 *Tarif* : ${data.harga}\n` +
              `✅ *Status* : *LUNAS*\n\n` +
-             `🔗 *Lihat / Unduh E-Tiket Digital:*\n${digitalTicketUrl}\n\n` +
+             `🔗 *Lihat / Unduh E-Tiket Digital Anda:*\n${publicUrl}\n\n` +
              `_Catatan: Harap tiba di titik keberangkatan 30 menit sebelum jadwal. Simpan pesan dan tiket ini sebagai bukti sah._\n\n` +
              `*Customer Care PO Sumbawa:* 081763333330\n` +
              `*Customer Care PO Mataram:* 082339860600\n` +
@@ -1804,6 +1817,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       const data = {
         idx: targetIdx,
         id: sheet.dataset.id,
+        token: sheet.dataset.token || '',
         nama: sheet.dataset.nama || 'Penumpang',
         phone: sheet.dataset.phone || '',
         tiket: sheet.dataset.tiket || 'SGT',

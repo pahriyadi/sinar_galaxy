@@ -1290,5 +1290,19 @@ function getSaldoAwalById($id) {
     return mysqli_fetch_assoc($result);
 }
 
+// ==============================================================================
+// PUBLIC E-TIKET TOKEN GENERATOR & VALIDATOR
+// ==============================================================================
+function generateTiketToken($id_pemesanan) {
+    $salt = 'SGT_ETIKET_SECRET_KEY_2026_GALAXYSUMBAWA';
+    return substr(hash('sha256', (int)$id_pemesanan . '_' . $salt), 0, 16);
+}
+
+function validateTiketToken($id_pemesanan, $token) {
+    if (empty($id_pemesanan) || empty($token)) return false;
+    return hash_equals(generateTiketToken($id_pemesanan), trim((string)$token));
+}
+
+
 
 
