@@ -1070,10 +1070,15 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       </div>
     </div>
 
+    <?php 
+      $firstHp = !empty($tickets[0]['no_hp_id']) ? $tickets[0]['no_hp_id'] : '';
+      $firstNama = !empty($tickets[0]['nama_id']) ? $tickets[0]['nama_id'] : '';
+    ?>
+
     <!-- Share & Print Action Buttons -->
     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-      <button type="button" onclick="kirimWhatsAppTiket()" class="action-btn" style="background: #25D366; color: #ffffff; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);" title="Kirim file gambar tiket & link tiket resmi ke WhatsApp pelanggan">
-        <i class="fab fa-whatsapp" style="font-size: 15px;"></i> Kirim ke WhatsApp
+      <button type="button" onclick="kirimWhatsAppLangsung(0)" class="action-btn" style="background: #25D366; color: #ffffff; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);" title="Kirim langsung ke WhatsApp pelanggan: <?= htmlspecialchars($firstNama . (!empty($firstHp) ? ' (' . $firstHp . ')' : '')) ?>">
+        <i class="fab fa-whatsapp" style="font-size: 15px;"></i> Kirim WA <?= !empty($firstHp) && count($tickets) === 1 ? '(' . htmlspecialchars($firstHp) . ')' : 'Pelanggan' ?>
       </button>
       <button type="button" onclick="downloadGambarTiket()" class="action-btn" style="background: #0284c7; color: #ffffff;" title="Download tiket dalam format gambar resolusi tinggi (PNG)">
         <i class="fas fa-file-image"></i> Simpan Gambar (PNG)
@@ -1410,11 +1415,11 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
         </div>
       </div>
 
-      <!-- Quick Action Per Tiket (Hanya tampil di layar jika ada lebih dari 1 tiket) -->
+      <!-- Quick Action Per Tiket (Tampil jika ada lebih dari 1 tiket) -->
       <?php if (count($tickets) > 1): ?>
       <div class="no-print" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: -6px; margin-bottom: 10px;">
-        <button type="button" onclick="kirimWhatsAppTiket(<?= $idx ?>)" class="action-btn" style="background: #25D366; color: #fff; font-size: 11px; padding: 4px 10px;">
-          <i class="fab fa-whatsapp"></i> Kirim WA Tiket Ini
+        <button type="button" onclick="kirimWhatsAppLangsung(<?= $idx ?>)" class="action-btn" style="background: #25D366; color: #fff; font-size: 11px; padding: 4px 10px;" title="Kirim langsung ke WhatsApp <?= htmlspecialchars($noHp) ?>">
+          <i class="fab fa-whatsapp"></i> Kirim WA <?= !empty($noHp) && $noHp !== '-' ? '(' . htmlspecialchars($noHp) . ')' : 'Pelanggan' ?>
         </button>
         <button type="button" onclick="downloadGambarTiket(<?= $idx ?>)" class="action-btn" style="background: #0284c7; color: #fff; font-size: 11px; padding: 4px 10px;">
           <i class="fas fa-image"></i> Simpan Gambar
@@ -1787,9 +1792,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     }
 
     // =========================================================================
-    // FITUR 1: KIRIM / SHARE TIKET KE WHATSAPP (GAMBAR LANGSUNG / PDF / LINK)
+    // FITUR 1: KIRIM LANGSUNG KE NOMOR WHATSAPP PELANGGAN
     // =========================================================================
-    async function kirimWhatsAppTiket(targetIdx = 0) {
+    async function kirimWhatsAppLangsung(targetIdx = 0) {
       const sheet = document.getElementById('ticket_sheet_' + targetIdx);
       if (!sheet) {
         alert('Data tiket tidak ditemukan.');
@@ -1799,25 +1804,42 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       const data = {
         idx: targetIdx,
         id: sheet.dataset.id,
-        nama: sheet.dataset.nama,
-        phone: sheet.dataset.phone,
-        tiket: sheet.dataset.tiket,
-        tujuan: sheet.dataset.tujuan,
-        tgl: sheet.dataset.tgl,
-        jam: sheet.dataset.jam,
-        kursi: sheet.dataset.kursi,
-        plat: sheet.dataset.plat,
-        harga: sheet.dataset.harga
+        nama: sheet.dataset.nama || 'Penumpang',
+        phone: sheet.dataset.phone || '',
+        tiket: sheet.dataset.tiket || 'SGT',
+        tujuan: sheet.dataset.tujuan || '-',
+        tgl: sheet.dataset.tgl || '-',
+        jam: sheet.dataset.jam || '-',
+        kursi: sheet.dataset.kursi || '-',
+        plat: sheet.dataset.plat || '-',
+        harga: sheet.dataset.harga || '-'
       };
 
-      const waPhone = formatWhatsAppNumber(data.phone);
+      let waPhone = formatWhatsAppNumber(data.phone);
+
+      // Jika nomor HP kosong atau tidak valid, minta input nomor tujuan
+      if (!waPhone || waPhone.length < 8) {
+        const inputPrompt = prompt(
+          `Nomor WhatsApp untuk penumpang "${data.nama}" belum terisi.\n\nSilakan masukkan nomor WhatsApp tujuan (contoh: 08123456789):`,
+          ""
+        );
+        if (inputPrompt === null) {
+          return; // Dibatalkan oleh user
+        }
+        waPhone = formatWhatsAppNumber(inputPrompt);
+        if (!waPhone || waPhone.length < 8) {
+          alert("Nomor WhatsApp yang dimasukkan tidak valid. Pengiriman dibatalkan.");
+          return;
+        }
+      }
+
       const waMessage = buildWhatsAppMessage(data);
       const elem = getTargetElement(targetIdx);
 
-      showToast('Menyiapkan gambar E-Tiket untuk WhatsApp...', 'fa-circle-notch fa-spin', 0);
+      showToast(`Menyiapkan tiket untuk dikirim ke ${waPhone}...`, 'fa-circle-notch fa-spin', 0);
 
       try {
-        // Render element ke canvas PNG
+        // 1. Render element tiket ke canvas PNG
         const canvas = await html2canvas(elem, {
           scale: 2,
           useCORS: true,
@@ -1825,52 +1847,38 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
           backgroundColor: '#ffffff'
         });
 
-        // Konversi canvas ke Blob
+        // 2. Download file gambar PNG otomatis ke perangkat (agar kasir/admin siap melampirkan)
         canvas.toBlob(async function(blob) {
-          if (!blob) {
-            hideToast();
-            openWhatsAppLink(waPhone, waMessage);
-            return;
-          }
-
           const fileName = `E-Tiket_${data.tiket.replace(/\s+/g, '_')}_${data.nama.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
-          const file = new File([blob], fileName, { type: 'image/png' });
-
-          // Cek apakah browser / device mendukung Web Share API File Sharing (Android / iOS / Modern Chrome)
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            hideToast();
+          
+          if (blob) {
+            // Salin gambar ke clipboard jika didukung browser modern (bisa langsung Ctrl+V di WA Web)
             try {
-              await navigator.share({
-                files: [file],
-                title: 'E-Tiket Sinar Galaxy - ' + data.tiket,
-                text: waMessage
-              });
-              showToast('Tiket berhasil dibagikan!', 'fa-check-circle', 3000);
-              return;
-            } catch (shareErr) {
-              if (shareErr.name !== 'AbortError') {
-                console.warn('Share error fallback:', shareErr);
+              if (navigator.clipboard && window.ClipboardItem) {
+                const item = new ClipboardItem({ 'image/png': blob });
+                await navigator.clipboard.write([item]);
               }
+            } catch (clipErr) {
+              console.log('Clipboard write not permitted, skipping:', clipErr);
             }
-          }
 
-          // Fallback untuk Desktop / Browser yang tidak mendukung direct file share:
-          // 1. Download file gambar PNG ke perangkat kasir
-          const imgUrl = URL.createObjectURL(blob);
-          const downloadLink = document.createElement('a');
-          downloadLink.href = imgUrl;
-          downloadLink.download = fileName;
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
+            // Download file gambar
+            const imgUrl = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imgUrl;
+            downloadLink.download = fileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+          }
 
           hideToast();
-          showToast('Gambar tiket diunduh! Membuka WhatsApp...', 'fa-whatsapp', 3500);
+          showToast(`Membuka WhatsApp ke +${waPhone}... Gambar tiket telah siap!`, 'fa-whatsapp', 4000);
 
-          // 2. Buka chat WhatsApp Web / WhatsApp Desktop dengan pesan terformat
+          // 3. Buka WhatsApp secara instan tertuju ke nomor pelanggan
           setTimeout(function() {
             openWhatsAppLink(waPhone, waMessage);
-          }, 800);
+          }, 600);
 
         }, 'image/png');
 
@@ -1879,6 +1887,11 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
         hideToast();
         openWhatsAppLink(waPhone, waMessage);
       }
+    }
+
+    // Alias fungsi lama
+    function kirimWhatsAppTiket(targetIdx = 0) {
+      kirimWhatsAppLangsung(targetIdx);
     }
 
     function openWhatsAppLink(phone, message) {
