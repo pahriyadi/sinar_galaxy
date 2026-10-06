@@ -1,0 +1,66 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# ==============================================================================
+# 1. ATURAN KEAMANAN URL & PROTEKSI FILE SENSITIF
+# ==============================================================================
+
+# Blokir akses ke file tersembunyi (dimulai dengan titik, misal .git, .env)
+RewriteRule (^\.|/\.) - [F,L]
+
+# Blokir akses langsung via browser ke folder internal / include / backup
+# (Folder ini hanya boleh diakses secara internal oleh PHP lewat include/require)
+RewriteRule ^inc(/|$) - [F,L,NC]
+RewriteRule ^galaxy_drive/backups(/|$) - [F,L,NC]
+RewriteRule ^docs(/|$) - [F,L,NC]
+
+# ==============================================================================
+# 2. CLEAN URL (PORTABEL LOCALHOST & HOSTING)
+# ==============================================================================
+
+# Hapus ekstensi .php jika diakses langsung dari browser (Redirect 301 ke Clean URL)
+# Hanya berlaku untuk metode GET/HEAD (bukan POST form) agar payload data form aman
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+([^\s?]+?)\.php(\?[^\s]*)?\sHTTP [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# Internal Rewrite: Jika URL bersih tanpa .php diminta dan file fisiknya ada, proses secara internal
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+
+</IfModule>
+
+# ==============================================================================
+# 3. PROTEKSI EKSTENSI FILE SENSITIF (DATABASE DUMP, BACKUP, LOG, CONFIG)
+# ==============================================================================
+<FilesMatch "\.(sql|bak|backup|config|env|ini|log|sh|md|git)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Matikan Directory Listing untuk mencegah intip daftar folder
+Options -Indexes
+
+# ==============================================================================
+# 4. HTTP SECURITY HEADERS
+# ==============================================================================
+<IfModule mod_headers.c>
+    # Mencegah MIME-sniffing
+    Header set X-Content-Type-Options "nosniff"
+    # Mencegah Clickjacking (iframe dari luar)
+    Header set X-Frame-Options "SAMEORIGIN"
+    # Perlindungan XSS dasar pada browser lama
+    Header set X-XSS-Protection "1; mode=block"
+    # Batasi data referrer ke luar domain
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    # Batasi izin sensor hardware
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>

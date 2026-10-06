@@ -1,0 +1,127 @@
+{
+    "date": "2026-09-26",
+    "generated_at": "2026-09-27T02:08:18+08:00",
+    "counts": {
+        "activity_log": 5,
+        "login_history": 2
+    },
+    "data": {
+        "activity_log": [
+            {
+                "id_log": 70916,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "view",
+                "table_name": "dashboard",
+                "record_id": null,
+                "description": "Dashboard",
+                "old_data": "Dashboard accessed",
+                "new_data": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+                "session_id": "ci0q9vi95gglbj4i1gj4vu54bg",
+                "created_at": "2026-09-26 20:08:16"
+            },
+            {
+                "id_log": 70917,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "view",
+                "table_name": "dashboard",
+                "record_id": null,
+                "description": "Dashboard",
+                "old_data": "Dashboard accessed",
+                "new_data": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+                "session_id": "ci0q9vi95gglbj4i1gj4vu54bg",
+                "created_at": "2026-09-26 20:08:17"
+            },
+            {
+                "id_log": 70918,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "update",
+                "table_name": "data_pengiriman",
+                "record_id": 8722,
+                "description": "Update pengiriman",
+                "old_data": "{\"id_pengiriman\":8722,\"nip_sgt_id\":\"SGT-520468288874\",\"nama_id\":\"DITARI\",\"alamat_id\":\"MATARAM\",\"no_ktp_id\":\"-\",\"no_hp_id\":\"08513720502\",\"tanggal_pengiriman\":\"2026-09-15 14:00:00\",\"jenis_barang\":\"PAKET BESAR\",\"nama_penerima\":\"AGUS ROZIK\",\"no_hp_penerima\":\"-\",\"no_plat_id\":\"EA 7673 A\",\"kelas_id\":\"VIP\",\"tujuan_id\":\"2\",\"status_pembayaran_id\":\"1\",\"metode_pembayaran_id\":\"2\",\"jenis_rekening_id\":\"4\",\"payment_methods\":\"[{\\\"method_id\\\":2,\\\"amount\\\":25000,\\\"rekening_id\\\":4,\\\"payment_date\\\":\\\"2026-09-15\\\"}]\",\"payment_details\":\"Single payment method\",\"jumlah\":\"25000.00\",\"user_id\":14,\"asal_po_id\":\"Sumbawa\",\"keterangan\":\"\"}",
+                "new_data": "{\"nip_sgt_id\":\"SGT-520468288874\",\"nama_id\":\"DITARI\",\"alamat_id\":\"MATARAM\",\"no_ktp_id\":\"-\",\"no_hp_id\":\"08513720502\",\"tanggal_pengiriman\":\"2026-09-15T14:00\",\"jenis_barang\":\"PAKET BESAR\",\"nama_penerima\":\"AGUS ROZIK\",\"no_hp_penerima\":\"-\",\"no_plat_id\":\"EA 7673 A\",\"kelas_id\":\"VIP\",\"tujuan_id\":\"2\",\"status_pembayaran_id\":\"1\",\"metode_pembayaran_id\":\"2\",\"jenis_rekening_id\":\"4\",\"jumlah\":25000,\"user_id\":\"14\",\"asal_po_id\":\"Sumbawa\"}",
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+                "session_id": "ci0q9vi95gglbj4i1gj4vu54bg",
+                "created_at": "2026-09-26 20:28:04"
+            },
+            {
+                "id_log": 70919,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "view",
+                "table_name": "dashboard",
+                "record_id": null,
+                "description": "Dashboard",
+                "old_data": "Dashboard accessed",
+                "new_data": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+                "session_id": "bevqjpis1i009t4i9j93hjjtve",
+                "created_at": "2026-09-26 20:48:24"
+            },
+            {
+                "id_log": 70920,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "view",
+                "table_name": "dashboard",
+                "record_id": null,
+                "description": "Dashboard",
+                "old_data": "Dashboard accessed",
+                "new_data": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+                "session_id": "bevqjpis1i009t4i9j93hjjtve",
+                "created_at": "2026-09-26 20:48:24"
+            }
+        ],
+        "login_history": [
+            {
+                "id_login": 3431,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "login_time": "2026-09-26 20:08:15",
+                "logout_time": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+                "session_id": "ci0q9vi95gglbj4i1gj4vu54bg",
+                "status": "success",
+                "failure_reason": null
+            },
+            {
+                "id_login": 3432,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "login_time": "2026-09-26 20:48:24",
+                "logout_time": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+                "session_id": "bevqjpis1i009t4i9j93hjjtve",
+                "status": "success",
+                "failure_reason": null
+            }
+        ]
+    }
+}

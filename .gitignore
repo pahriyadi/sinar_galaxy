@@ -1,0 +1,22 @@
+# Databases & Dumps (Mencegah file SQL besar ter-upload)
+*.sql
+*.sql.gz
+*.tar.gz
+
+# Log & Berkas Sementara
+err.txt
+out.txt
+test_err.txt
+*.log
+
+# Editor & OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Galaxy Drive runtime data & user storage
+galaxy_drive/backups/*
+!galaxy_drive/backups/.gitkeep
+galaxy_drive/users/*
+!galaxy_drive/users/.gitkeep

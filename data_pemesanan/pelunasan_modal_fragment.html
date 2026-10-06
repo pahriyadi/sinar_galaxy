@@ -1,0 +1,64 @@
+<!-- Modal Pelunasan Piutang -->
+<div class="modal fade" id="modalPelunasan" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formPelunasan" method="post">
+        <div class="modal-header bg-success py-2">
+          <h6 class="modal-title text-white">Pelunasan Piutang</h6>
+          <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="pelunasan_id">
+          <div class="form-group">
+            <label>Sisa Bayar</label>
+            <input type="text" class="form-control" id="pelunasan_sisa" readonly>
+          </div>
+          <div class="form-group">
+            <label>Tanggal Bayar</label>
+            <input type="date" name="payment_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+          </div>
+          <div class="form-group">
+            <label>Metode Pembayaran</label>
+            <select name="method_id" class="form-control" required>
+              <?php foreach ($metodeMap as $mId=>$mName): ?>
+              <option value="<?= $mId ?>"><?= htmlspecialchars($mName) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Rekening / Kas</label>
+            <select name="rekening_id" class="form-control" required>
+              <?php foreach ($rekeningMap as $rId=>$rName): ?>
+              <option value="<?= $rId ?>"><?= htmlspecialchars($rName) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer py-1">
+          <button type="submit" class="btn btn-success btn-sm">Lunaskan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function openPelunasanModal(id){
+  $.getJSON('data_pemesanan_fetch.php',{id_pemesanan:id}).done(function(data){
+    if(!data){alert('Data tidak ditemukan');return;}
+    let paid=0;
+    if(data.payment_methods && data.payment_methods.length){data.payment_methods.forEach(p=>paid+=parseFloat(p.amount||0));}
+    const sisa=parseFloat(data.harga_id||0)-paid;
+    if(sisa<=0.01){alert('Sudah lunas');return;}
+    $('#pelunasan_id').val(id);
+    $('#pelunasan_sisa').val('Rp '+sisa.toLocaleString('id-ID'));
+    $('#modalPelunasan').modal('show');
+  }).fail(()=>alert('Gagal mengambil data'));
+}
+$('#formPelunasan').on('submit',function(e){e.preventDefault();
+  const fd=$(this).serialize();
+  $.post('lunaskan_pemesanan.php',fd,function(r){
+    if(r.success){alert('Pelunasan berhasil');location.reload();}
+    else alert(r.msg||'Gagal');
+  },'json').fail(x=>alert(x.responseText||'Error'));
+});
+</script>

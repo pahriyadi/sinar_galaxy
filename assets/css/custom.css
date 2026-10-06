@@ -1,0 +1,931 @@
+/* ==========================================================================
+   📄 Panduan Desain Universal — "Putih di Atas Kertas" (Paper White Design System)
+   Versi: 2.0
+   Framework: AdminLTE 3 + Bootstrap 4
+   Konsep: Simpel, Klasik, Cepat, Bersih, Minimalis, Elegan
+   ========================================================================== */
+
+/* 1. PALET WARNA (TOKENS) */
+:root {
+    --putih: #ffffff;
+    --border-utama: #b8b8b8;
+    --border-header-tabel: #b0b0b0;
+    --border-luar-tabel: #a0a0a0;
+    --border-menu: #d3d3d3;
+    --border-submenu: #e0e0e0;
+    --teks-utama: #333333;
+    --teks-konten: #444444;
+    --teks-sekunder: #666666;
+    --teks-placeholder: #999999;
+    --hover-tabel: #f0f7f3;
+    --hover-menu: #f5f5f5;
+    --aktif-bg: #e6f4ea;
+    --aktif-teks: #076e34;
+    --aktif-border: #0d9f4f;
+    --focus-border: #0d9f4f;
+    --focus-glow: rgba(13, 159, 79, 0.15);
+}
+
+/* 2. GLOBAL RESET & BASE */
+body,
+.wrapper,
+.content-wrapper {
+    background-color: #ffffff !important;
+    color: #444444 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* 3. KARTU / CARD (.card) */
+.card {
+    box-shadow: none !important;
+    border: 1px solid #b8b8b8 !important;
+    background-color: #ffffff !important;
+    border-radius: 4px !important;
+    margin-bottom: 1.25rem !important;
+}
+.card-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #b8b8b8 !important;
+    padding: 0.75rem 1.25rem !important;
+}
+.card-header .card-title {
+    color: #333333 !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+}
+.card-body {
+    background-color: #ffffff !important;
+    color: #444444 !important;
+}
+.card-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid #b8b8b8 !important;
+}
+
+/* 4. TABEL (.table & table.dataTable) - GRID TEGAS EXCEL */
+.table,
+.table-excel,
+table.dataTable {
+    border-collapse: collapse !important;
+    background-color: #ffffff !important;
+    width: 100% !important;
+    border: 1.5px solid #a0a0a0 !important;
+}
+
+.dataTables_wrapper {
+    border: none !important;
+    margin-bottom: 1rem !important;
+    background: #ffffff !important;
+}
+
+/* Header tabel */
+.table thead th,
+.table-excel thead th,
+table.dataTable thead th,
+table.dataTable thead td,
+thead.thead-dark th,
+thead.thead-light th {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #b0b0b0 !important;
+    font-weight: 600 !important;
+    padding: 8px 10px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-size: 0.88rem !important;
+}
+
+/* Sel body */
+.table tbody tr td,
+table.dataTable tbody tr td {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    padding: 7px 10px !important;
+    color: #444444 !important;
+    vertical-align: middle !important;
+    font-size: 0.88rem !important;
+}
+
+/* ANTI-ZEBRA: matikan striping bawaan */
+.table-striped > tbody > tr:nth-of-type(odd) > *,
+.table-striped > tbody > tr:nth-of-type(even) > *,
+table.dataTable tbody tr.odd > *,
+table.dataTable tbody tr.even > *,
+table.dataTable tbody td.sorting_1,
+table.dataTable.stripe tbody tr.odd,
+table.dataTable.display tbody tr.odd {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+}
+
+/* HOVER: satu-satunya penanda baris aktif */
+.table tbody tr:hover td,
+table.dataTable tbody tr:hover td {
+    background-color: #f0f7f3 !important;
+    transition: background-color 0.15s ease-in-out !important;
+}
+
+/* Table Footer / tfoot */
+.table tfoot th,
+.table tfoot td,
+table.dataTable tfoot th,
+table.dataTable tfoot td {
+    background-color: #ffffff !important;
+    border-top: 1.5px solid #a0a0a0 !important;
+    border-bottom: 1px solid #b8b8b8 !important;
+    border-left: 1px solid #b8b8b8 !important;
+    border-right: 1px solid #b8b8b8 !important;
+    color: #333333 !important;
+    font-weight: 600 !important;
+}
+
+/* Alignment Helper untuk Sel Tabel Excel */
+.table thead th.text-left, .table tbody td.text-left, .table tfoot td.text-left, .table tfoot th.text-left { text-align: left !important; }
+.table thead th.text-right, .table tbody td.text-right, .table tfoot td.text-right, .table tfoot th.text-right { text-align: right !important; }
+.table thead th.text-center, .table tbody td.text-center, .table tfoot td.text-center, .table tfoot th.text-center { text-align: center !important; }
+
+/* 5. FORM INPUT (.form-control, .custom-select, textarea) */
+.form-control,
+.custom-select,
+textarea.form-control {
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    box-shadow: none !important;
+    font-size: 0.9rem !important;
+}
+
+.form-control:focus,
+.custom-select:focus {
+    border-color: #0d9f4f !important;
+    box-shadow: 0 0 0 0.15rem rgba(13, 159, 79, 0.15) !important;
+}
+
+.select2-container--bootstrap4 .select2-selection {
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+}
+
+.input-group-text {
+    border: 1px solid #b8b8b8 !important;
+    background-color: #f8f9fa !important;
+    color: #555555 !important;
+    border-radius: 4px !important;
+}
+
+label {
+    color: #333333 !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+}
+
+/* 6. MODAL (.modal-content) */
+.modal-content {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+.modal-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #b8b8b8 !important;
+}
+.modal-header .modal-title {
+    font-weight: 600 !important;
+    color: #333333 !important;
+}
+.modal-body {
+    background-color: #ffffff !important;
+    color: #444444 !important;
+}
+.modal-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid #b8b8b8 !important;
+}
+
+/* 7. TOMBOL / BUTTON (.btn) */
+.btn {
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease-in-out !important;
+}
+.btn-secondary {
+    background-color: #f8f9fa !important;
+    border: 1px solid #b8b8b8 !important;
+    color: #444444 !important;
+}
+.btn-secondary:hover {
+    background-color: #e9ecef !important;
+    border-color: #a0a0a0 !important;
+    color: #222222 !important;
+}
+.btn-default,
+.btn-light {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    color: #444444 !important;
+}
+.btn-default:hover,
+.btn-light:hover {
+    background-color: #f5f5f5 !important;
+    border-color: #a0a0a0 !important;
+}
+.btn-primary {
+    background-color: #0d9f4f !important;
+    border-color: #0d9f4f !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover {
+    background-color: #076e34 !important;
+    border-color: #076e34 !important;
+    color: #ffffff !important;
+}
+.btn-success {
+    background-color: #0d9f4f !important;
+    border-color: #0d9f4f !important;
+    color: #ffffff !important;
+}
+.btn-success:hover {
+    background-color: #076e34 !important;
+    border-color: #076e34 !important;
+    color: #ffffff !important;
+}
+
+/* 8. SIDEBAR */
+.main-sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid #b8b8b8 !important;
+    box-shadow: none !important;
+}
+.brand-link,
+.user-panel {
+    border-bottom: 1px solid #b8b8b8 !important;
+    background-color: #ffffff !important;
+    color: #333333 !important;
+}
+.brand-link .brand-text {
+    color: #333333 !important;
+    font-weight: 600 !important;
+}
+.user-panel .info a {
+    color: #333333 !important;
+    font-weight: 600 !important;
+}
+.user-panel .info small {
+    color: #666666 !important;
+}
+.nav-sidebar .nav-item .nav-link {
+    border: 1px solid #d3d3d3 !important;
+    border-radius: 4px !important;
+    margin-bottom: 6px !important;
+    background-color: #ffffff !important;
+    color: #444444 !important;
+    box-shadow: none !important;
+}
+.nav-sidebar .nav-treeview .nav-item .nav-link {
+    padding-left: 2rem !important;
+    border-color: #e0e0e0 !important;
+}
+.nav-sidebar > .nav-item > .nav-link.active,
+.nav-sidebar .nav-item > .nav-link.active {
+    background-color: #e6f4ea !important;
+    color: #076e34 !important;
+    border: 1px solid #0d9f4f !important;
+    border-left: 3px solid #0d9f4f !important;
+    box-shadow: none !important;
+}
+.nav-sidebar .nav-link:hover {
+    background-color: #f5f5f5 !important;
+    border-color: #b8b8b8 !important;
+    color: #222222 !important;
+}
+.nav-sidebar .nav-header {
+    background-color: #ffffff !important;
+    color: #888888 !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* 9. HEADER NAVBAR */
+.main-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #b8b8b8 !important;
+    box-shadow: none !important;
+}
+.main-header .navbar-nav .nav-link {
+    color: #444444 !important;
+}
+
+/* User Dropdown Menu Paper White */
+.dropdown-menu {
+    border: 1px solid #b8b8b8 !important;
+    box-shadow: none !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+}
+.navbar .user-header.bg-primary {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border-bottom: 1px solid #b8b8b8 !important;
+}
+.navbar .user-header.bg-primary p {
+    color: #333333 !important;
+}
+.navbar .user-header.bg-primary small {
+    color: #666666 !important;
+}
+.user-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid #b8b8b8 !important;
+}
+
+/* 10. FOOTER */
+.main-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid #b8b8b8 !important;
+    box-shadow: none !important;
+    color: #555555 !important;
+}
+
+/* 11. DASHBOARD CARD / SMALL BOX */
+.small-box {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    box-shadow: none !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+}
+.small-box > .inner h3,
+.small-box > .inner h4 {
+    color: #333333 !important;
+}
+.small-box > .inner p,
+.small-box > .inner small {
+    color: #666666 !important;
+}
+.small-box.bg-primary,
+.small-box.bg-success,
+.small-box.bg-info,
+.small-box.bg-warning,
+.small-box.bg-danger,
+.small-box.bg-secondary,
+.small-box.bg-teal {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+}
+.small-box > .icon i {
+    color: rgba(0, 0, 0, 0.08) !important;
+}
+.small-box .small-box-footer {
+    background-color: #f8f9fa !important;
+    color: #555555 !important;
+    border-top: 1px solid #b8b8b8 !important;
+}
+.small-box .small-box-footer:hover {
+    background-color: #f0f0f0 !important;
+    color: #222222 !important;
+}
+
+/* 12. ALERT RINGKASAN (.alert-excel) */
+.alert-excel {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    color: #333333 !important;
+    border-left: 4px solid #0d9f4f !important;
+    box-shadow: none !important;
+}
+
+/* 13. DATATABLES KONTROL (PAGINASI & SEARCH) */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+    color: #444444 !important;
+    box-shadow: none !important;
+    padding: 4px 10px !important;
+    margin: 0 2px !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: #e6f4ea !important;
+    color: #076e34 !important;
+    border: 1px solid #0d9f4f !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #f5f5f5 !important;
+    border-color: #b8b8b8 !important;
+    color: #222222 !important;
+}
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+    padding: 4px 8px !important;
+}
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #0d9f4f !important;
+    box-shadow: 0 0 0 0.15rem rgba(13, 159, 79, 0.15) !important;
+}
+
+/* 14. MODERN INFO MINI CARD (OVERRIDE KE PAPER WHITE) */
+div.info-mini-card {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+div.info-mini-card .card-value {
+    color: #333333 !important;
+    font-weight: 700 !important;
+}
+div.info-mini-card .card-label {
+    color: #666666 !important;
+}
+div.info-mini-card .card-icon {
+    color: rgba(0, 0, 0, 0.08) !important;
+}
+div.info-mini-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+div.info-mini-card.bg-modern-info,
+div.info-mini-card.bg-modern-success,
+div.info-mini-card.bg-modern-warning,
+div.info-mini-card.bg-modern-danger,
+div.info-mini-card.bg-modern-primary,
+div.info-mini-card.bg-modern-purple,
+div.info-mini-card.bg-modern-dark {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+}
+
+/* 15. BADGE REFINEMENT (PAPER WHITE) */
+.badge {
+    box-shadow: none !important;
+    border-radius: 3px !important;
+    font-weight: 600 !important;
+    border: 1px solid transparent;
+}
+.badge-success {
+    background-color: #e6f4ea !important;
+    color: #076e34 !important;
+    border-color: #0d9f4f !important;
+}
+.badge-warning {
+    background-color: #fff9db !important;
+    color: #856404 !important;
+    border-color: #ffe066 !important;
+}
+.badge-danger {
+    background-color: #fde8e8 !important;
+    color: #9b1c1c !important;
+    border-color: #f8b4b4 !important;
+}
+.badge-info {
+    background-color: #e1effe !important;
+    color: #1e429f !important;
+    border-color: #b3d7ff !important;
+}
+.badge-secondary {
+    background-color: #f3f4f6 !important;
+    color: #4b5563 !important;
+    border-color: #d1d5db !important;
+}
+
+/* 16. INFO-BOX & SMALL-BOX (PAPER WHITE SYSTEM) */
+.info-box {
+    box-shadow: none !important;
+    border: 1px solid #b8b8b8 !important;
+    background-color: #ffffff !important;
+    border-radius: 4px !important;
+    min-height: 76px !important;
+    padding: 10px 14px !important;
+    color: #333333 !important;
+    margin-bottom: 1rem !important;
+}
+.info-box.bg-primary,
+.info-box.bg-success,
+.info-box.bg-info,
+.info-box.bg-warning,
+.info-box.bg-danger,
+.info-box.bg-secondary {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+}
+.info-box-icon {
+    border-radius: 4px !important;
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 1.3rem !important;
+    background: #f8f9fa !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0d9f4f !important;
+    box-shadow: none !important;
+}
+.info-box.bg-success .info-box-icon,
+.info-box-icon.bg-success {
+    color: #0d9f4f !important;
+    background: #e6f4ea !important;
+    border-color: #b7e1cd !important;
+}
+.info-box.bg-info .info-box-icon,
+.info-box-icon.bg-info {
+    color: #0284c7 !important;
+    background: #f0f9ff !important;
+    border-color: #bae6fd !important;
+}
+.info-box.bg-primary .info-box-icon,
+.info-box-icon.bg-primary {
+    color: #0d9f4f !important;
+    background: #e6f4ea !important;
+    border-color: #b7e1cd !important;
+}
+.info-box.bg-warning .info-box-icon,
+.info-box-icon.bg-warning {
+    color: #b45309 !important;
+    background: #fef3c7 !important;
+    border-color: #fde68a !important;
+}
+.info-box.bg-danger .info-box-icon,
+.info-box-icon.bg-danger {
+    color: #dc2626 !important;
+    background: #fee2e2 !important;
+    border-color: #fecaca !important;
+}
+
+.info-box-content {
+    padding: 0 0 0 12px !important;
+}
+.info-box-text {
+    font-size: 0.78rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+}
+.info-box-number {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin-top: 2px !important;
+}
+
+/* 17. LAPORAN & REKAP SPECIFIC OVERRIDES */
+.card-primary.card-outline,
+.card-info.card-outline,
+.card-success.card-outline,
+.card-warning.card-outline,
+.card-danger.card-outline {
+    border-top: 1px solid #b8b8b8 !important;
+    border: 1px solid #b8b8b8 !important;
+    box-shadow: none !important;
+}
+
+#printArea table,
+#tableLaporan,
+#tableRekap {
+    border-collapse: collapse !important;
+    border: 1.5px solid #a0a0a0 !important;
+}
+
+/* ========================================
+   18. PAGE PRELOADER - Paper White Style
+   (Berdasarkan spesifikasi loading_page.md)
+   ======================================== */
+.page-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.6) !important; /* Transparan putih */
+    backdrop-filter: blur(4px) !important; /* Efek blur kaca premium */
+    -webkit-backdrop-filter: blur(4px) !important; /* Dukungan Safari */
+    z-index: 99999 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.page-preloader.fade-out {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.preloader-spinner-wrapper {
+    text-align: center;
+}
+
+.preloader-logo-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preloader-logo-img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.preloader-spinner {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #0d9f4f;
+    border-radius: 50%;
+    animation: preloader-spin 0.8s cubic-bezier(0.53, 0.21, 0.29, 0.86) infinite;
+    z-index: 1;
+}
+
+.preloader-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0d9f4f;
+    letter-spacing: 1px;
+    margin-bottom: 0.25rem;
+    font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.preloader-text {
+    font-size: 0.85rem;
+    color: #666666;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+@keyframes preloader-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Penyelarasan Preloader saat Validasi Berhasil (Disamarkan / Ditimpa) */
+.page-preloader.preloader-softened {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(1px) !important;
+    -webkit-backdrop-filter: blur(1px) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
+}
+
+.page-preloader.preloader-softened .preloader-spinner-wrapper {
+    opacity: 0 !important;
+    transform: scale(0.95);
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
+}
+
+/* Pastikan SweetAlert2 (Notifikasi Validasi) Selalu Menimpa di Atas Preloader */
+.swal2-container {
+    z-index: 100005 !important;
+}
+
+.swal2-popup {
+    border: 1px solid #b8b8b8 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+}
+
+.swal2-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+.swal2-html-container {
+    color: #475569 !important;
+    font-size: 0.95rem !important;
+}
+
+@media print {
+    .page-preloader,
+    #page-preloader {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+    }
+}
+
+/* ==========================================================================
+   SIMULASI DENAH KURSI TRAVEL & KONTROL KEBERANGKATAN (PAPER WHITE THEME)
+   ========================================================================== */
+.cabin-container {
+    background: #ffffff;
+    border: 1.5px solid #a0a0a0;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.cabin-windshield {
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.cabin-windshield i {
+    color: #94a3b8;
+    margin-right: 5px;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+}
+
+.seat-aisle {
+    flex: 0 0 28px;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #cbd5e1;
+    user-select: none;
+}
+
+.seat-box {
+    flex: 1;
+    min-width: 58px;
+    height: 64px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+    user-select: none;
+    padding: 4px;
+    text-align: center;
+}
+
+.seat-box .seat-num {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.seat-box .seat-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.seat-box i {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+/* Supir */
+.seat-driver {
+    background: #f8fafc;
+    border: 1.5px dashed #94a3b8;
+    color: #475569;
+    cursor: default;
+}
+
+/* Tersedia */
+.seat-available {
+    background: #ffffff;
+    border: 1.5px solid #0d9f4f;
+    color: #0d9f4f;
+}
+
+.seat-available:hover {
+    background: #f0f7f3;
+    border-color: #076e34;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(13, 159, 79, 0.15);
+}
+
+/* Terpilih */
+.seat-selected {
+    background: #0d9f4f !important;
+    border: 1.5px solid #076e34 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 159, 79, 0.25) !important;
+}
+
+.seat-selected i, .seat-selected .seat-num, .seat-selected .seat-label {
+    color: #ffffff !important;
+}
+
+/* Terisi Lunas */
+.seat-occupied {
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.seat-occupied:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.seat-occupied.seat-disabled {
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+/* Terisi DP / Piutang */
+.seat-dp {
+    background: #fffbeb;
+    border: 1.5px solid #f59e0b;
+    color: #b45309;
+    cursor: pointer;
+}
+
+.seat-dp:hover {
+    background: #fef3c7;
+}
+
+/* Quick Schedule Pills */
+.schedule-pill-btn {
+    border: 1px solid #b8b8b8;
+    background: #ffffff;
+    color: #333333;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.schedule-pill-btn:hover {
+    background: #f0f7f3;
+    border-color: #0d9f4f;
+    color: #076e34;
+}
+
+.schedule-pill-btn.active {
+    background: #e6f4ea;
+    border-color: #0d9f4f;
+    color: #076e34;
+    font-weight: 700;
+}
+
+/* Legend Denah */
+.seat-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    margin-right: 12px;
+}
+
+.seat-legend-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+
+
+

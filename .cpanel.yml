@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    # Sesuaikan DEPLOYPATH dengan path folder root website di cPanel Anda
+    # Contoh: /home/username_cpanel/public_html/
+    - export DEPLOYPATH=/home/USERCPANEL/public_html/
+    - /bin/rsync -av --exclude='.git' --exclude='.cpanel.yml' --exclude='*.sql' * $DEPLOYPATH
