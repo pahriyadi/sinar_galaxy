@@ -1090,9 +1090,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
 
     <?php 
     foreach ($tickets as $idx => $t): 
-      // Formatting Data
+      // Formatting Data (Solusi 1: Nomor Tiket Berkelanjutan Berbasis id_pemesanan)
       $idPemesanan = (int)$t['id_pemesanan'];
-      $noTiket = !empty($t['nip_sgt_id']) ? $t['nip_sgt_id'] : 'SGT ' . str_pad($idPemesanan, 6, '0', STR_PAD_LEFT);
+      $noTiket = 'SGT ' . str_pad($idPemesanan, 6, '0', STR_PAD_LEFT);
       $namaPenumpang = !empty($t['nama_id']) ? $t['nama_id'] : '-';
       $noKursi = !empty($t['kursi']) ? $t['kursi'] : '-';
       $kotaTujuan = !empty($t['nama_tujuan']) ? $t['nama_tujuan'] : ($tujuanMap[$t['tujuan_id']] ?? '-');
