@@ -561,6 +561,20 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                         </div>
                     </div>
                     <div class="col-md-5 text-right no-print mt-2 mt-md-0">
+                        <?php 
+                        $tiket_ids = [];
+                        foreach ($rekap as $r_item) {
+                            if ($r_item['jenis_transaksi'] === 'Tiket') {
+                                $tiket_ids[] = (int)$r_item['id_transaksi'];
+                            }
+                        }
+                        $tiket_ids_str = implode(',', $tiket_ids);
+                        ?>
+                        <?php if (!empty($tiket_ids_str)): ?>
+                        <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-info btn-sm btn-flat font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Tiket penumpang pada manifes ini">
+                            <i class="fas fa-ticket-alt mr-1"></i> Cetak E-Tiket (<?= count($tiket_ids) ?>)
+                        </a>
+                        <?php endif; ?>
                         <button type="button" class="btn btn-default btn-sm btn-flat" onclick="previewPrint()" style="border: 1px solid #b8b8b8; background: #ffffff; font-weight: 600; margin-right: 6px;">
                             <i class="fas fa-eye mr-1 text-info"></i> Pratinjau Cetak
                         </button>
@@ -696,8 +710,9 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                         <thead>
                             <tr>
                                 <th style="width: 3%; text-align: center;">No</th>
+                                <th style="width: 5%; text-align: center;" class="no-print">Aksi</th>
                                 <th style="width: 5%; text-align: center;">Jenis</th>
-                                <th style="width: 13%; text-align: left;">Nama</th>
+                                <th style="width: 12%; text-align: left;">Nama</th>
                                 <th style="width: 8%; text-align: left;">No. KTP</th>
                                 <th style="width: 8%; text-align: left;">No. HP</th>
                                 <th style="width: 7%; text-align: center;">No. Plat</th>
@@ -717,7 +732,7 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                         <tbody>
                             <?php if (empty($rekap)): ?>
                                 <tr>
-                                    <td colspan="17" class="text-center py-4 text-muted">
+                                    <td colspan="18" class="text-center py-4 text-muted">
                                         <i class="fas fa-info-circle mr-1"></i> Tidak ada catatan manifes keberangkatan pada tanggal dan kriteria ini.
                                     </td>
                                 </tr>
@@ -741,7 +756,7 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                                         $row_total += $amt;
                                         $rekId = $p['rekening_id'] ?? null;
                                         if ($rekId && isset($rekeningMap[$rekId])) {
-                                            $rName = strtolower($rekeningMap[$rekId]);
+                                            $rName = strtolower($rekeningMap[$rekId]['nama_rekening'] ?? '');
                                             if (strpos($rName, 'kasir') !== false && strpos($rName, 'sumbawa') !== false) {
                                                 $row_kasir_sbw += $amt;
                                             } elseif (strpos($rName, 'kasir') !== false && strpos($rName, 'mataram') !== false) {
@@ -773,6 +788,15 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $no++ ?></td>
+                                        <td class="text-center no-print">
+                                            <?php if ($isTiket): ?>
+                                                <a href="../data_pemesanan/cetak_etiket.php?id=<?= $row['id_transaksi'] ?>" target="_blank" class="btn btn-xs btn-primary font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;" title="Cetak E-Tiket Penumpang">
+                                                    <i class="fas fa-ticket-alt mr-1"></i> E-Tiket
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td class="text-center">
                                             <?php if ($isTiket): ?>
                                                 <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600; font-size: 0.72rem; padding: 2px 5px;">Tiket</span>
@@ -838,7 +862,7 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                             }
                             ?>
                             <tr>
-                                <th colspan="10" class="text-center">TOTAL REKAPITULASI AUDIT</th>
+                                <th colspan="11" class="text-center">TOTAL REKAPITULASI AUDIT</th>
                                 <th class="text-right"><?= $tot_kasir_sbw > 0 ? number_format($tot_kasir_sbw, 0, ',', '.') : '-' ?></th>
                                 <th class="text-right"><?= $tot_kasir_mtr > 0 ? number_format($tot_kasir_mtr, 0, ',', '.') : '-' ?></th>
                                 <th class="text-right"><?= $tot_bri > 0 ? number_format($tot_bri, 0, ',', '.') : '-' ?></th>

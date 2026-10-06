@@ -198,6 +198,9 @@ if ($result) {
             <button class="btn btn-info btn-sm btn-invoice" data-id="' . $row['id_pemesanan'] . '" data-nama="' . htmlspecialchars($row['nama_id']) . '" data-tujuan="' . htmlspecialchars($tujuanText) . '" data-alamat="' . htmlspecialchars($row['alamat_id']) . '" data-tglp="' . htmlspecialchars($row['tanggal_pemesanan']) . '" data-tglb="' . htmlspecialchars($row['tanggal_berangkat']) . '" data-seat="' . htmlspecialchars($row['kursi']) . '" data-noplat="' . htmlspecialchars($row['no_plat_id']) . '" data-kelas="' . htmlspecialchars($row['kelas_id']) . '" data-harga="' . htmlspecialchars($row['harga_id']) . '" data-status="' . htmlspecialchars($statusText) . '" data-username="' . htmlspecialchars($userMap[$row['username']] ?? $row['username']) . '">
               <i class="fas fa-file-invoice"></i>
             </button>
+            <a href="cetak_etiket.php?id=' . $row['id_pemesanan'] . '" target="_blank" class="btn btn-primary btn-sm btn-etiket" title="Cetak E-Tiket Penumpang" style="background-color: #0b3b7b; border-color: #082852; color: #fff;">
+              <i class="fas fa-id-card"></i>
+            </a>
           </div>';
 
         $data[] = [

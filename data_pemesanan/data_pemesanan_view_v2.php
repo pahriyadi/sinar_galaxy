@@ -1147,6 +1147,9 @@ if ($result) {
               <button id="btnDownloadKwitansiPelangganPDF" class="btn btn-sm btn-outline-danger ml-1">
                 <i class="fas fa-file-pdf mr-1"></i> Download PDF
               </button>
+              <a id="btnBukaEtiketResmi" href="#" target="_blank" class="btn btn-sm btn-primary font-weight-bold ml-1" style="background-color: #0b3b7b; border-color: #082852;">
+                <i class="fas fa-id-card mr-1"></i> Cetak E-Tiket Resmi
+              </a>
             </div>
             <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Tutup</button>
           </div>
@@ -2278,6 +2281,7 @@ if ($result) {
         $('#kwtp_seat').text(': ' + seat);
         $('#kwtp_harga').text(': Rp ' + parseInt(harga).toLocaleString('id-ID'));
         $('#kwtp_metode').text(': ' + (metode || 'Cash/Transfer'));
+        $('#btnBukaEtiketResmi').attr('href', 'cetak_etiket.php?id=' + idPemesanan);
 
         // Update status berdasarkan data sebenarnya
         const statusElement = $('#kwitansiPelangganArea').find('span[style*="color:#28a745"]');

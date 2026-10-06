@@ -511,7 +511,21 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-5 text-right no-print mt-2 mt-md-0">
+                    <div class="col-md-6 text-right no-print mt-2 mt-md-0">
+                        <?php 
+                        $tiket_ids = [];
+                        foreach ($rekap as $r_item) {
+                            if ($r_item['jenis_transaksi'] === 'Tiket') {
+                                $tiket_ids[] = (int)$r_item['id_transaksi'];
+                            }
+                        }
+                        $tiket_ids_str = implode(',', $tiket_ids);
+                        ?>
+                        <?php if (!empty($tiket_ids_str)): ?>
+                        <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-info btn-sm btn-flat font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Tiket penumpang pada tabel ini">
+                            <i class="fas fa-ticket-alt mr-1"></i> Cetak E-Tiket (<?= count($tiket_ids) ?>)
+                        </a>
+                        <?php endif; ?>
                         <?php if ($role === 'super admin'): ?>
                         <button type="button" class="btn btn-warning btn-sm btn-flat font-weight-bold" id="btnOpenModalGantiArmada" style="background-color: #f59e0b; border-color: #d97706; color: #ffffff; margin-right: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.12);" title="Alihkan seluruh penumpang dari travel yang batal ke armada pengganti">
                             <i class="fas fa-exchange-alt mr-1"></i> Ganti Armada Pengganti
@@ -667,21 +681,22 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                         <thead>
                             <tr>
                                 <th style="width: 3%; text-align: center;">#</th>
-                                <th style="width: 7%; text-align: center;">Jenis</th>
-                                <th style="width: 17%; text-align: left;">Nama Penumpang / Pengirim</th>
-                                <th style="width: 11%; text-align: left;">No. Identitas (KTP)</th>
+                                <th style="width: 6%; text-align: center;" class="no-print">Aksi</th>
+                                <th style="width: 6%; text-align: center;">Jenis</th>
+                                <th style="width: 16%; text-align: left;">Nama Penumpang / Pengirim</th>
+                                <th style="width: 10%; text-align: left;">No. Identitas (KTP)</th>
                                 <th style="width: 10%; text-align: left;">No. Handphone</th>
-                                <th style="width: 9%; text-align: center;">No. Plat</th>
-                                <th style="width: 6%; text-align: center;">Kursi</th>
+                                <th style="width: 8%; text-align: center;">No. Plat</th>
+                                <th style="width: 5%; text-align: center;">Kursi</th>
                                 <th style="width: 12%; text-align: left;">Kota Tujuan</th>
-                                <th style="width: 15%; text-align: left;">Lokasi Jemput / Alamat</th>
+                                <th style="width: 14%; text-align: left;">Lokasi Jemput / Alamat</th>
                                 <th style="width: 10%; text-align: right;">Tarif / Ongkir</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($rekap)): ?>
                                 <tr>
-                                    <td colspan="10" class="text-center py-4 text-muted">
+                                    <td colspan="11" class="text-center py-4 text-muted">
                                         <i class="fas fa-info-circle mr-1"></i> Tidak ada data manifes keberangkatan pada filter yang ditentukan.
                                     </td>
                                 </tr>
@@ -695,6 +710,15 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $no++ ?></td>
+                                        <td class="text-center no-print">
+                                            <?php if ($isTiket): ?>
+                                                <a href="../data_pemesanan/cetak_etiket.php?id=<?= $row['id_transaksi'] ?>" target="_blank" class="btn btn-xs btn-primary font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;" title="Cetak E-Tiket Penumpang">
+                                                    <i class="fas fa-ticket-alt mr-1"></i> E-Tiket
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td class="text-center">
                                             <?php if ($isTiket): ?>
                                                 <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600; font-size: 0.75rem; padding: 3px 6px;">
@@ -744,7 +768,7 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="6" class="text-center">TOTAL REKAPITULASI MANIFES</th>
+                                <th colspan="7" class="text-center">TOTAL REKAPITULASI MANIFES</th>
                                 <th class="text-center">
                                     <span class="badge" style="background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; font-weight: 700;">
                                         <?= $total_tiket ?> Penumpang
