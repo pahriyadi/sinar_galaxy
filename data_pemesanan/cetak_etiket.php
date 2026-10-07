@@ -10,7 +10,7 @@ require_once '../inc/koneksi.php';
 $id_pemesanan = isset($_GET['id']) ? $_GET['id'] : (isset($_GET['id_pemesanan']) ? $_GET['id_pemesanan'] : '');
 $no_plat_filter = isset($_GET['no_plat']) ? $_GET['no_plat'] : '';
 $tanggal_filter = isset($_GET['tanggal']) ? $_GET['tanggal'] : '';
-$format_kertas = isset($_GET['format']) ? strtolower(trim($_GET['format'])) : 'a4'; // a4, thermal80, thermal58
+$format_kertas = isset($_GET['format']) ? strtolower(trim($_GET['format'])) : 'thermal80'; // thermal80 (default), a4, thermal58
 
 $tickets = [];
 
@@ -1351,7 +1351,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     }
   </style>
 </head>
-<body class="view-format-<?= in_array($format_kertas, ['thermal80', 'thermal58']) ? $format_kertas : 'a4' ?>">
+<body class="view-format-<?= in_array($format_kertas, ['a4', 'thermal58']) ? $format_kertas : 'thermal80' ?>">
 
   <!-- Floating Action Bar with Format Selector -->
   <div class="action-bar no-print">
@@ -1368,11 +1368,11 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     <div style="display: flex; align-items: center; gap: 6px;">
       <span style="font-size: 12px; font-weight: 700; color: #4a5568;"><i class="fas fa-print mr-1"></i> Ukuran:</span>
       <div class="format-switcher-group">
-        <button type="button" class="format-btn <?= $format_kertas === 'a4' || !in_array($format_kertas, ['thermal80', 'thermal58']) ? 'active' : '' ?>" onclick="switchFormat('a4')">
-          <i class="fas fa-file-invoice"></i> A4 Warna Resmi
-        </button>
-        <button type="button" class="format-btn <?= $format_kertas === 'thermal80' ? 'active' : '' ?>" onclick="switchFormat('thermal80')">
+        <button type="button" class="format-btn <?= $format_kertas === 'thermal80' || !in_array($format_kertas, ['a4', 'thermal58']) ? 'active' : '' ?>" onclick="switchFormat('thermal80')">
           <i class="fas fa-ticket-alt"></i> Boarding Pass 80mm
+        </button>
+        <button type="button" class="format-btn <?= $format_kertas === 'a4' ? 'active' : '' ?>" onclick="switchFormat('a4')">
+          <i class="fas fa-file-invoice"></i> A4 Warna Resmi
         </button>
         <button type="button" class="format-btn <?= $format_kertas === 'thermal58' ? 'active' : '' ?>" onclick="switchFormat('thermal58')">
           <i class="fas fa-mobile-alt"></i> Thermal 58mm

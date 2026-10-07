@@ -12,7 +12,7 @@ require_once __DIR__ . '/../assets/fungsi.php';
 
 $id_pemesanan = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $token = isset($_GET['token']) ? trim($_GET['token']) : '';
-$format_kertas = isset($_GET['format']) ? strtolower(trim($_GET['format'])) : 'a4';
+$format_kertas = isset($_GET['format']) ? strtolower(trim($_GET['format'])) : 'thermal80';
 
 // Cek apakah user sedang login sebagai admin internal (bisa bypass token jika session ada)
 $isAdminLoggedIn = false;
