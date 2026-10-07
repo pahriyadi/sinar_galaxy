@@ -60,17 +60,40 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     $busImage = '../img/travel_ekonomi.jpg';
 }
 
+// Master mapping jika dibutuhkan fallback
+$tujuanMap = [];
+$res = mysqli_query($conn, "SELECT id_tujuan_perjalanan, nama_tujuan FROM data_tujuan_perjalanan");
+if ($res) { while ($r = mysqli_fetch_assoc($res)) { $tujuanMap[$r['id_tujuan_perjalanan']] = $r['nama_tujuan']; } }
+
+$usersMap = [];
+$res = mysqli_query($conn, "SELECT id_users, username, asal_po FROM data_users");
+if ($res) { 
+    while ($r = mysqli_fetch_assoc($res)) { 
+        $usersMap[$r['id_users']] = !empty($r['asal_po']) ? $r['asal_po'] : $r['username']; 
+    } 
+}
+
 // Format Data Tiket jika valid
 if ($isValid && $ticket) {
     $idPemesanan = (int)$ticket['id_pemesanan'];
     $noTiket = 'SGT ' . str_pad($idPemesanan, 6, '0', STR_PAD_LEFT);
     $namaPenumpang = !empty($ticket['nama_id']) ? $ticket['nama_id'] : '-';
     $noKursi = !empty($ticket['kursi']) ? $ticket['kursi'] : '-';
-    $kotaTujuan = !empty($ticket['nama_tujuan']) ? $ticket['nama_tujuan'] : '-';
+    $kotaTujuan = !empty($ticket['nama_tujuan']) ? $ticket['nama_tujuan'] : ($tujuanMap[$ticket['tujuan_id']] ?? '-');
     $noHp = !empty($ticket['no_hp_id']) ? $ticket['no_hp_id'] : '-';
     $noPlat = !empty($ticket['no_plat_id']) ? $ticket['no_plat_id'] : '-';
     $kelasTravel = !empty($ticket['kelas']) ? $ticket['kelas'] : 'Executive';
-    $asalPOCabang = !empty($ticket['asal_po']) ? $ticket['asal_po'] : 'Sumbawa';
+    
+    // Ambil Nama Kota Asal Keberangkatan (Bukan ID User / Integer)
+    $rawAsal = !empty($ticket['asal_po']) ? $ticket['asal_po'] : (!empty($ticket['asal_po_kasir']) ? $ticket['asal_po_kasir'] : 'Sumbawa');
+    if (is_numeric($rawAsal) && isset($usersMap[$rawAsal])) {
+        $kotaAsal = $usersMap[$rawAsal];
+    } elseif (!empty($rawAsal) && !is_numeric($rawAsal)) {
+        $kotaAsal = $rawAsal;
+    } else {
+        $kotaAsal = 'Sumbawa';
+    }
+    $asalPOCabang = $kotaAsal;
     
     // Formatting Waktu Berangkat
     $tglBerangkatRaw = $ticket['tanggal_berangkat'];
@@ -1150,66 +1173,73 @@ if ($isValid && $ticket) {
       <div class="bp-body">
         <div class="bp-main-section">
           <div class="bp-grid-info">
+            
+            <!-- Row 1: Nama, Tanggal, Kelas -->
             <div class="bp-cell">
-              <span class="bp-cell-label">NAME</span>
+              <span class="bp-cell-label">NAMA PENUMPANG (NAME)</span>
               <span class="bp-cell-val bold-lg"><?= htmlspecialchars(strtoupper($namaPenumpang)) ?></span>
             </div>
             <div class="bp-cell">
-              <span class="bp-cell-label">DATE</span>
-              <span class="bp-cell-val"><?= $timeBerangkat ? strtoupper(date('dM', $timeBerangkat)) : '-' ?></span>
+              <span class="bp-cell-label">TANGGAL (DATE)</span>
+              <span class="bp-cell-val"><?= htmlspecialchars($tglBerangkatDisplay) ?></span>
             </div>
             <div class="bp-cell">
               <div class="bp-class-group">
-                <span class="bp-cell-val bold-lg" style="font-size: 12px;"><?= htmlspecialchars(strtoupper($kelasTravel)) ?></span>
+                <span class="bp-cell-val bold-lg" style="font-size: 13px;"><?= htmlspecialchars(strtoupper($kelasTravel)) ?></span>
                 <span class="bp-cell-label" style="margin-left:auto;">Group <strong class="bp-group-letter"><?= substr(strtoupper($kelasTravel), 0, 1) ?></strong></span>
               </div>
             </div>
 
+            <!-- Row 2: Dari, Keberangkatan, Kursi -->
             <div class="bp-cell">
-              <span class="bp-cell-label">FROM</span>
-              <span class="bp-cell-val"><?= htmlspecialchars(strtoupper($asalPOCabang)) ?></span>
+              <span class="bp-cell-label">DARI (FROM)</span>
+              <span class="bp-cell-val bold-lg"><?= htmlspecialchars(strtoupper($kotaAsal)) ?></span>
             </div>
             <div class="bp-cell">
-              <span class="bp-cell-label">CLASS</span>
-              <span class="bp-cell-val"><?= substr(strtoupper($kelasTravel), 0, 1) ?></span>
+              <span class="bp-cell-label">JAM BERANGKAT (TIME)</span>
+              <span class="bp-cell-val time-highlight"><?= htmlspecialchars($jamTeksDisplay) ?></span>
             </div>
             <div class="bp-cell">
-              <span class="bp-cell-label">TRIP / BUS No</span>
-              <span class="bp-cell-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
-            </div>
-
-            <div class="bp-cell">
-              <span class="bp-cell-label">TO</span>
-              <span class="bp-cell-val bold-lg"><?= htmlspecialchars(strtoupper($kotaTujuan)) ?></span>
-            </div>
-            <div class="bp-cell">
-              <span class="bp-cell-label">SEQ.</span>
-              <span class="bp-cell-val"><?= str_pad($idPemesanan % 1000, 2, '0', STR_PAD_LEFT) ?></span>
-            </div>
-            <div class="bp-cell">
-              <span class="bp-cell-label">SEAT</span>
+              <span class="bp-cell-label">NO. KURSI (SEAT)</span>
               <span class="bp-cell-val seat-highlight"><?= htmlspecialchars($noKursi) ?></span>
             </div>
 
+            <!-- Row 3: Tujuan, Armada Plat, No Tiket -->
             <div class="bp-cell">
-              <span class="bp-cell-label">PNR</span>
+              <span class="bp-cell-label">TUJUAN (TO)</span>
+              <span class="bp-cell-val bold-lg"><?= htmlspecialchars(strtoupper($kotaTujuan)) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">ARMADA / PLAT BUS</span>
+              <span class="bp-cell-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">NO. TIKET (PNR)</span>
               <span class="bp-cell-val bold-lg"><?= htmlspecialchars($noTiket) ?></span>
             </div>
+
+            <!-- Row 4: No HP, Tarif & Status, Loket Asal -->
             <div class="bp-cell">
-              <span class="bp-cell-label">GATE / PO</span>
-              <span class="bp-cell-val bold-lg">PO <?= htmlspecialchars(strtoupper($asalPOCabang)) ?></span>
+              <span class="bp-cell-label">NO. HP PENUMPANG</span>
+              <span class="bp-cell-val"><?= htmlspecialchars($noHp) ?></span>
             </div>
             <div class="bp-cell">
-              <span class="bp-cell-label">BOARDING TIME</span>
-              <span class="bp-cell-val time-highlight"><?= $timeBerangkat ? date('H:i', $timeBerangkat) : '19:30' ?></span>
+              <span class="bp-cell-label">TARIF & STATUS BAYAR</span>
+              <span class="bp-cell-val" style="color: #0d8a43; font-weight: 900;"><?= htmlspecialchars($hargaTiketDisplay) ?> (LUNAS)</span>
             </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">LOKET / CABANG</span>
+              <span class="bp-cell-val">PO <?= htmlspecialchars(strtoupper($kotaAsal)) ?></span>
+            </div>
+
           </div>
 
+          <!-- Bottom Main: Barcode 1D + Red Warning Notes -->
           <div class="bp-barcode-bottom-row">
             <svg id="barcode_public_bp" class="bp-barcode-img"></svg>
             <div class="bp-warning-text">
-              BOARDING GATE CLOSES 15 MINUTES BEFORE DEPARTURE<br>
-              RUANG TUNGGU TUTUP 15 MENIT SEBELUM JADWAL KEBERANGKATAN
+              HARAP TIBA DI TITIK KEBERANGKATAN 30 MENIT SEBELUM JADWAL<br>
+              SIMPAN TIKET INI SEBAGAI BUKTI PEMBAYARAN SAH
             </div>
           </div>
         </div>
@@ -1225,40 +1255,40 @@ if ($isValid && $ticket) {
 
           <div class="bp-stub-grid">
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">NAME</span>
+              <span class="bp-stub-lbl">PENUMPANG</span>
               <span class="bp-stub-val" style="font-size: 8.5px;"><?= htmlspecialchars(strtoupper($namaPenumpang)) ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">TRIP No</span>
-              <span class="bp-stub-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
+              <span class="bp-stub-lbl">DARI</span>
+              <span class="bp-stub-val bold-lg"><?= htmlspecialchars(strtoupper($kotaAsal)) ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">DATE</span>
-              <span class="bp-stub-val"><?= $timeBerangkat ? strtoupper(date('dM', $timeBerangkat)) : '-' ?></span>
+              <span class="bp-stub-lbl">TUJUAN</span>
+              <span class="bp-stub-val bold-lg"><?= htmlspecialchars(strtoupper($kotaTujuan)) ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">DEST.</span>
-              <span class="bp-stub-val bold-lg"><?= htmlspecialchars(strtoupper(substr($kotaTujuan, 0, 4))) ?></span>
+              <span class="bp-stub-lbl">TANGGAL</span>
+              <span class="bp-stub-val"><?= $timeBerangkat ? date('d/m/Y', $timeBerangkat) : '-' ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">PNR</span>
-              <span class="bp-stub-val"><?= htmlspecialchars($noTiket) ?></span>
+              <span class="bp-stub-lbl">JAM</span>
+              <span class="bp-stub-val" style="font-weight: 900;"><?= $jamTeks ?> WITA</span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">SEAT</span>
+              <span class="bp-stub-lbl">KURSI</span>
               <span class="bp-stub-val seat"><?= htmlspecialchars($noKursi) ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">BOARDING</span>
-              <span class="bp-stub-val" style="font-weight: 900;"><?= $timeBerangkat ? date('H:i', $timeBerangkat) : '19:30' ?></span>
+              <span class="bp-stub-lbl">NO. TIKET</span>
+              <span class="bp-stub-val"><?= htmlspecialchars($noTiket) ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">SEQ.</span>
-              <span class="bp-stub-val"><?= str_pad($idPemesanan % 1000, 2, '0', STR_PAD_LEFT) ?></span>
+              <span class="bp-stub-lbl">ARMADA</span>
+              <span class="bp-stub-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
             </div>
             <div class="bp-stub-row">
-              <span class="bp-stub-lbl">CLASS</span>
-              <span class="bp-stub-val"><?= substr(strtoupper($kelasTravel), 0, 1) ?></span>
+              <span class="bp-stub-lbl">STATUS</span>
+              <span class="bp-stub-val" style="color: #0d8a43; font-weight: 900;">LUNAS</span>
             </div>
           </div>
         </div>
