@@ -103,6 +103,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,700;1,800&family=Montserrat:wght@700;800;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -802,26 +803,270 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       background: #ffffff;
       margin: 0 auto 30px auto;
       color: #000000;
-      font-family: 'Courier Prime', monospace, 'Courier New', Courier;
-      border: 1px solid #cbd5e1;
-      padding: 12px 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
       page-break-after: always;
     }
 
+    /* ==========================================================================
+       MODE 2: BOARDING PASS STYLE (THERMAL 80MM / LANDSCAPE PASS)
+       IDENTIK DENGAN FOTO LION AIR GROUP BOARDING PASS
+       ========================================================================== */
     .thermal-wrapper.mode-80 {
-      width: 80mm;
-      max-width: 80mm;
-      font-size: 11.5px;
-      line-height: 1.25;
+      width: 760px;
+      max-width: 100%;
+      background: #ffffff;
+      color: #000000;
+      font-family: 'Montserrat', 'Plus Jakarta Sans', Arial, sans-serif;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 10px 14px 8px 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
     }
 
+    .bp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .bp-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .bp-logo-brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #c92a2a;
+      font-weight: 900;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    .bp-logo-brand i {
+      font-size: 18px;
+    }
+
+    .bp-sub-brand {
+      color: #c92a2a;
+      font-weight: 800;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .bp-header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .bp-group-brand {
+      color: #c92a2a;
+      font-weight: 900;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bp-badge-box {
+      border: 1px solid #c92a2a;
+      color: #c92a2a;
+      padding: 1px 8px;
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+
+    .bp-body {
+      display: flex;
+      padding-top: 10px;
+    }
+
+    .bp-main-section {
+      flex: 1;
+      padding-right: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .bp-grid-info {
+      display: grid;
+      grid-template-columns: 2.2fr 1.5fr 1.6fr;
+      row-gap: 8px;
+      column-gap: 12px;
+    }
+
+    .bp-cell {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bp-cell-label {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1px;
+    }
+
+    .bp-cell-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #000000;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+
+    .bp-cell-val.bold-lg {
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .bp-cell-val.seat-highlight {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+      color: #000000;
+    }
+
+    .bp-cell-val.time-highlight {
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.1;
+      color: #000000;
+    }
+
+    .bp-class-group {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .bp-group-letter {
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      margin-left: 6px;
+    }
+
+    .bp-barcode-bottom-row {
+      display: flex;
+      flex-direction: column;
+      margin-top: 8px;
+    }
+
+    .bp-barcode-img {
+      height: 34px;
+      width: 220px;
+    }
+
+    .bp-warning-text {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: #c92a2a;
+      line-height: 1.25;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* Vertical Divider with Strip Barcode / Perforation */
+    .bp-vertical-strip {
+      width: 44px;
+      border-left: 1.5px dashed #000000;
+      padding: 0 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bp-strip-barcode-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Passenger Stub (Sisi Kanan) */
+    .bp-stub-section {
+      width: 175px;
+      padding-left: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-left: 1px dotted #94a3b8;
+    }
+
+    .bp-stub-badge-box {
+      border: 1px solid #c92a2a;
+      color: #c92a2a;
+      padding: 2px 6px;
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-align: center;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .bp-stub-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 9px;
+    }
+
+    .bp-stub-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      line-height: 1.2;
+    }
+
+    .bp-stub-lbl {
+      font-weight: 700;
+      color: #333;
+      font-size: 8px;
+      text-transform: uppercase;
+      width: 58px;
+    }
+
+    .bp-stub-val {
+      font-weight: 800;
+      color: #000;
+      font-size: 9px;
+      text-transform: uppercase;
+      text-align: right;
+      flex: 1;
+    }
+
+    .bp-stub-val.seat {
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    /* ==========================================================================
+       MODE 3: MINI THERMAL 58MM
+       ========================================================================== */
     .thermal-wrapper.mode-58 {
       width: 58mm;
       max-width: 58mm;
+      font-family: 'Courier Prime', monospace, Courier;
       font-size: 9.5px;
       line-height: 1.2;
       padding: 8px 5px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
 
     .thermal-header {
@@ -831,13 +1076,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
 
     .th-brand {
       font-weight: 900;
-      font-size: 15px;
+      font-size: 12px;
       letter-spacing: 1px;
       text-transform: uppercase;
-    }
-
-    .thermal-wrapper.mode-58 .th-brand {
-      font-size: 12px;
     }
 
     .th-sub {
@@ -1062,7 +1303,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
           <i class="fas fa-file-invoice"></i> A4 Warna Resmi
         </button>
         <button type="button" class="format-btn <?= $format_kertas === 'thermal80' ? 'active' : '' ?>" onclick="switchFormat('thermal80')">
-          <i class="fas fa-receipt"></i> Thermal 80mm
+          <i class="fas fa-ticket-alt"></i> Boarding Pass 80mm
         </button>
         <button type="button" class="format-btn <?= $format_kertas === 'thermal58' ? 'active' : '' ?>" onclick="switchFormat('thermal58')">
           <i class="fas fa-mobile-alt"></i> Thermal 58mm
@@ -1438,7 +1679,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
 
 
     <!-- ====================================================================
-         2. TEMPLATE THERMAL 80MM (OPTIMAL UNTUK PRINTER KASIR POS 80MM)
+         2. TEMPLATE THERMAL 80MM (BOARDING PASS AIRLINE STYLE - IDENTIK GAMBAR)
          ==================================================================== -->
     <div class="thermal-wrapper mode-80" id="thermal_80_<?= $idx ?>"
          data-ticket-idx="<?= $idx ?>" 
@@ -1451,113 +1692,164 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
          data-kursi="<?= htmlspecialchars($noKursi) ?>" 
          data-plat="<?= htmlspecialchars($noPlat) ?>" 
          data-harga="<?= htmlspecialchars($hargaTiketDisplay) ?>" 
-         data-id="<?= $idPemesanan ?>">
-      <div class="thermal-header">
-        <div class="th-brand">SINAR GALAXY TRAVEL</div>
-        <div class="th-sub">BUS AKAP / AKDP & TRAVEL EXECUTIVE</div>
-        <div class="th-contact">PO Sumbawa: 081763333330 | PO Mataram: 082339860600</div>
-        <div class="th-contact">Website: www.sinargalaxy.my.id</div>
+         data-id="<?= $idPemesanan ?>"
+         data-token="<?= htmlspecialchars($tiketToken) ?>">
+      
+      <!-- Boarding Pass Header -->
+      <div class="bp-header">
+        <div class="bp-header-left">
+          <div class="bp-logo-brand">
+            <i class="fas fa-bus-alt"></i>
+            <span>Sinar Galaxy</span>
+          </div>
+          <div class="bp-sub-brand">
+            Executive Travel
+          </div>
+        </div>
+
+        <div class="bp-header-right">
+          <div class="bp-group-brand">
+            <span>Sinar Galaxy Group</span>
+            <i class="fas fa-crown" style="font-size: 10px;"></i>
+          </div>
+          <div class="bp-badge-box">
+            BOARDING PASS
+          </div>
+        </div>
       </div>
 
-      <div class="thermal-double-divider"></div>
-      <div class="th-title-badge">TIKET PENUMPANG (RESMI)</div>
-      <div class="thermal-divider"></div>
+      <!-- Boarding Pass Body -->
+      <div class="bp-body">
+        
+        <!-- Sisi Kiri (Main Pass Section) -->
+        <div class="bp-main-section">
+          <div class="bp-grid-info">
+            
+            <!-- Row 1 -->
+            <div class="bp-cell">
+              <span class="bp-cell-label">NAME</span>
+              <span class="bp-cell-val bold-lg"><?= htmlspecialchars(strtoupper($namaPenumpang)) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">DATE</span>
+              <span class="bp-cell-val"><?= $timeBerangkat ? strtoupper(date('dM', $timeBerangkat)) : '-' ?></span>
+            </div>
+            <div class="bp-cell">
+              <div class="bp-class-group">
+                <span class="bp-cell-val bold-lg" style="font-size: 12px;"><?= htmlspecialchars(strtoupper($kelasTravel)) ?></span>
+                <span class="bp-cell-label" style="margin-left:auto;">Group <strong class="bp-group-letter"><?= substr(strtoupper($kelasTravel), 0, 1) ?></strong></span>
+              </div>
+            </div>
 
-      <table class="thermal-table">
-        <tr>
-          <td class="label">No. Tiket</td>
-          <td class="sep">:</td>
-          <td class="val thermal-highlight"><?= htmlspecialchars($noTiket) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Nama Penumpang</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($namaPenumpang) ?></td>
-        </tr>
-        <tr>
-          <td class="label">No. Kursi</td>
-          <td class="sep">:</td>
-          <td class="val thermal-highlight">KURSI <?= htmlspecialchars($noKursi) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Tujuan</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($kotaTujuan) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Keberangkatan</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($tglBerangkatDisplay) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Jam Berangkat</td>
-          <td class="sep">:</td>
-          <td class="val thermal-highlight"><?= htmlspecialchars($jamTeksDisplay) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Armada / Plat</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($noPlat) ?> (<?= htmlspecialchars($kelasTravel) ?>)</td>
-        </tr>
-        <tr>
-          <td class="label">No. Handphone</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($noHp) ?></td>
-        </tr>
-      </table>
+            <!-- Row 2 -->
+            <div class="bp-cell">
+              <span class="bp-cell-label">FROM</span>
+              <span class="bp-cell-val"><?= htmlspecialchars(strtoupper($asalPOCabang)) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">CLASS</span>
+              <span class="bp-cell-val"><?= substr(strtoupper($kelasTravel), 0, 1) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">TRIP / BUS No</span>
+              <span class="bp-cell-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
+            </div>
 
-      <div class="thermal-divider"></div>
-      <div style="font-weight: 700; text-align: center; margin: 2px 0;">INFORMASI PEMBAYARAN</div>
-      <div class="thermal-divider"></div>
+            <!-- Row 3 -->
+            <div class="bp-cell">
+              <span class="bp-cell-label">TO</span>
+              <span class="bp-cell-val bold-lg"><?= htmlspecialchars(strtoupper($kotaTujuan)) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">SEQ.</span>
+              <span class="bp-cell-val"><?= str_pad($idPemesanan % 1000, 2, '0', STR_PAD_LEFT) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">SEAT</span>
+              <span class="bp-cell-val seat-highlight"><?= htmlspecialchars($noKursi) ?></span>
+            </div>
 
-      <table class="thermal-table">
-        <tr>
-          <td class="label">Tarif Tiket</td>
-          <td class="sep">:</td>
-          <td class="val thermal-highlight"><?= htmlspecialchars($hargaTiketSimple) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Status Bayar</td>
-          <td class="sep">:</td>
-          <td class="val thermal-highlight" style="color: #000;">LUNAS</td>
-        </tr>
-        <tr>
-          <td class="label">Metode Bayar</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($metodePembayaran) ?></td>
-        </tr>
-        <tr>
-          <td class="label">Tanggal Bayar</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($tglTransferDisplay) ?></td>
-        </tr>
-        <?php if (!empty($catatan) && $catatan !== '-'): ?>
-        <tr>
-          <td class="label">Catatan/Jemput</td>
-          <td class="sep">:</td>
-          <td class="val"><?= htmlspecialchars($catatan) ?></td>
-        </tr>
-        <?php endif; ?>
-      </table>
+            <!-- Row 4 -->
+            <div class="bp-cell">
+              <span class="bp-cell-label">PNR</span>
+              <span class="bp-cell-val bold-lg"><?= htmlspecialchars($noTiket) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">GATE / PO</span>
+              <span class="bp-cell-val bold-lg">PO <?= htmlspecialchars(strtoupper($asalPOCabang)) ?></span>
+            </div>
+            <div class="bp-cell">
+              <span class="bp-cell-label">BOARDING TIME</span>
+              <span class="bp-cell-val time-highlight"><?= $timeBerangkat ? date('H:i', $timeBerangkat) : '19:30' ?></span>
+            </div>
 
-      <div class="thermal-divider"></div>
+          </div>
 
-      <!-- QR Code Thermal 80mm -->
-      <div class="thermal-qr-wrap">
-        <div class="thermal-qr-container" id="qrcode_th80_<?= $idx ?>"></div>
-        <div style="font-size: 8.5px; margin-top: 4px; font-weight: bold;">Scan QR Code untuk Validasi Tiket</div>
+          <!-- Bottom Main: Barcode 1D + Red Warning Notes -->
+          <div class="bp-barcode-bottom-row">
+            <svg id="barcode_th80_<?= $idx ?>" class="bp-barcode-img"></svg>
+            <div class="bp-warning-text">
+              BOARDING GATE CLOSES 15 MINUTES BEFORE DEPARTURE<br>
+              RUANG TUNGGU TUTUP 15 MENIT SEBELUM JADWAL KEBERANGKATAN
+            </div>
+          </div>
+        </div>
+
+        <!-- Pemisah Vertikal (Strip Barcode / Aztec Strip) -->
+        <div class="bp-vertical-strip">
+          <div class="bp-strip-barcode-container">
+            <div id="qrcode_vert_<?= $idx ?>"></div>
+          </div>
+        </div>
+
+        <!-- Sisi Kanan (Passenger Stub) -->
+        <div class="bp-stub-section">
+          <div class="bp-stub-badge-box">
+            BOARDING PASS
+          </div>
+
+          <div class="bp-stub-grid">
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">NAME</span>
+              <span class="bp-stub-val" style="font-size: 8.5px;"><?= htmlspecialchars(strtoupper($namaPenumpang)) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">TRIP No</span>
+              <span class="bp-stub-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">DATE</span>
+              <span class="bp-stub-val"><?= $timeBerangkat ? strtoupper(date('dM', $timeBerangkat)) : '-' ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">DEST.</span>
+              <span class="bp-stub-val bold-lg"><?= htmlspecialchars(strtoupper(substr($kotaTujuan, 0, 4))) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">PNR</span>
+              <span class="bp-stub-val"><?= htmlspecialchars($noTiket) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">SEAT</span>
+              <span class="bp-stub-val seat"><?= htmlspecialchars($noKursi) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">BOARDING</span>
+              <span class="bp-stub-val" style="font-weight: 900;"><?= $timeBerangkat ? date('H:i', $timeBerangkat) : '19:30' ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">SEQ.</span>
+              <span class="bp-stub-val"><?= str_pad($idPemesanan % 1000, 2, '0', STR_PAD_LEFT) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">CLASS</span>
+              <span class="bp-stub-val"><?= substr(strtoupper($kelasTravel), 0, 1) ?></span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <div class="thermal-divider"></div>
-      <div class="thermal-footer">
-        <strong>KETENTUAN:</strong><br>
-        1. Tiba di terminal 30 menit sebelum berangkat.<br>
-        2. Simpan tiket ini sebagai tanda bukti sah.<br>
-        3. Tiket yang sudah dibeli tidak dapat dibatalkan.<br>
-        --------------------------------<br>
-        Dicetak: <?= $tglCetak ?> WITA<br>
-        <strong>Terima Kasih Atas Kepercayaan Anda!</strong>
-      </div>
     </div>
 
 
@@ -1668,20 +1960,35 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
           }
         }
 
-        // 2. QR Code Thermal 80mm
-        var qrTh80 = document.getElementById("qrcode_th80_<?= $idx ?>");
-        if (qrTh80) {
+        // 2. Barcode 1D Thermal 80mm Boarding Pass
+        try {
+          if (window.JsBarcode) {
+            JsBarcode("#barcode_th80_<?= $idx ?>", "<?= $noTiket ?>", {
+              format: "CODE128",
+              width: 1.4,
+              height: 32,
+              displayValue: false,
+              margin: 0
+            });
+          }
+        } catch(bErr) {
+          console.error("Barcode 1D error:", bErr);
+        }
+
+        // 3. Vertical Strip QR Code (Divider Perforation)
+        var qrVert = document.getElementById("qrcode_vert_<?= $idx ?>");
+        if (qrVert) {
           try {
-            new QRCode(qrTh80, {
+            new QRCode(qrVert, {
               text: qrText,
-              width: 96,
-              height: 96,
+              width: 36,
+              height: 72,
               colorDark : "#000000",
               colorLight : "#ffffff",
-              correctLevel : QRCode.CorrectLevel.M
+              correctLevel : QRCode.CorrectLevel.L
             });
           } catch(e) {
-            qrTh80.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=<?= urlencode($qrData) ?>" alt="QR">';
+            qrVert.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=36x72&data=<?= urlencode($qrData) ?>" alt="QR" style="width:36px;height:72px;">';
           }
         }
 
@@ -1988,8 +2295,8 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       };
 
       if (format === 'thermal80') {
-        pdfOptions.margin = [2, 2, 2, 2];
-        pdfOptions.jsPDF = { unit: 'mm', format: [80, 240], orientation: 'portrait' };
+        pdfOptions.margin = [3, 3, 3, 3];
+        pdfOptions.jsPDF = { unit: 'mm', format: [205, 80], orientation: 'landscape' };
       } else if (format === 'thermal58') {
         pdfOptions.margin = [2, 2, 2, 2];
         pdfOptions.jsPDF = { unit: 'mm', format: [58, 200], orientation: 'portrait' };
