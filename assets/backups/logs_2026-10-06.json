@@ -1,0 +1,64 @@
+{
+    "date": "2026-10-06",
+    "generated_at": "2026-10-07T08:57:33+08:00",
+    "counts": {
+        "activity_log": 3,
+        "login_history": 0
+    },
+    "data": {
+        "activity_log": [
+            {
+                "id_log": 70925,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "view",
+                "table_name": "dashboard",
+                "record_id": null,
+                "description": "Dashboard",
+                "old_data": "Dashboard accessed",
+                "new_data": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+                "session_id": "nkf8436o6tpmq8km70u6p47qtv",
+                "created_at": "2026-10-06 22:45:05"
+            },
+            {
+                "id_log": 70926,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "view",
+                "table_name": "dashboard",
+                "record_id": null,
+                "description": "Dashboard",
+                "old_data": "Dashboard accessed",
+                "new_data": null,
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+                "session_id": "nkf8436o6tpmq8km70u6p47qtv",
+                "created_at": "2026-10-06 22:45:06"
+            },
+            {
+                "id_log": 70927,
+                "user_id": 14,
+                "username": "pahriyadi",
+                "nama_lengkap": "Pahriyadi",
+                "role": "super admin",
+                "activity_type": "update",
+                "table_name": "data_pelanggan",
+                "record_id": 17026,
+                "description": "Update data pelanggan: pahriyadi",
+                "old_data": "{\"id_pelanggan\":17026,\"nama\":\"pahriyadi\",\"alamat\":\"sumbawa\",\"no_ktp\":\"-\",\"no_hp\":\"08193756474\",\"nip_sgt\":\"SGT-520477151843\",\"username\":14,\"asal_po\":0}",
+                "new_data": "{\"nama\":\"pahriyadi\",\"alamat\":\"sumbawa\",\"no_ktp\":\"-\",\"no_hp\":\"081936955747\",\"nip_sgt\":\"SGT-520477151843\",\"username\":14,\"asal_po\":\"Sumbawa\"}",
+                "ip_address": "::1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+                "session_id": "nkf8436o6tpmq8km70u6p47qtv",
+                "created_at": "2026-10-06 23:30:36"
+            }
+        ],
+        "login_history": []
+    }
+}
