@@ -1309,12 +1309,6 @@ if ($isValid && $ticket) {
                 <span class="bp-pay-lbl">STATUS:</span>
                 <span class="bp-pay-val" style="color: #0d8a43; font-weight: 900;">LUNAS</span>
               </div>
-              <?php if (!empty($catatan) && $catatan !== '-'): ?>
-              <div class="bp-pay-item" style="grid-column: span 2;">
-                <span class="bp-pay-lbl">CATATAN:</span>
-                <span class="bp-pay-val"><?= htmlspecialchars($catatan) ?></span>
-              </div>
-              <?php endif; ?>
             </div>
           </div>
 
@@ -1572,13 +1566,6 @@ if ($isValid && $ticket) {
             <div class="bfield-label">Tanggal Transfer</div>
             <div class="field-separator">:</div>
             <div class="bfield-val-box"><?= htmlspecialchars($tglTransferDisplay) ?></div>
-          </div>
-
-          <div class="bottom-field-row">
-            <div class="bfield-icon"><i class="fas fa-sticky-note"></i></div>
-            <div class="bfield-label">Catatan</div>
-            <div class="field-separator">:</div>
-            <div class="bfield-val-box"><?= htmlspecialchars($catatan) ?></div>
           </div>
         </div>
 
