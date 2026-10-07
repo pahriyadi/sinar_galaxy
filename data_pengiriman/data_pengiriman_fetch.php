@@ -153,6 +153,27 @@ if ($result) {
         
         if (strtolower($statusText) === 'lunas') {
             $actionButtons .= '
+            <button class="btn btn-primary btn-sm btn-kwitansi-paket" 
+              data-id="' . $row['id_pengiriman'] . '"
+              data-id-pengiriman="' . $row['id_pengiriman'] . '"
+              data-nama="' . htmlspecialchars($row['nama_id']) . '"
+              data-alamat="' . htmlspecialchars($row['alamat_id']) . '"
+              data-nohp="' . htmlspecialchars($row['no_hp_id']) . '"
+              data-asalpo="' . htmlspecialchars($row['asal_po_id']) . '"
+              data-keterangan="' . htmlspecialchars($row['keterangan']) . '"
+              data-jenis-barang="' . htmlspecialchars($row['jenis_barang']) . '"
+              data-nama-penerima="' . htmlspecialchars($row['nama_penerima']) . '"
+              data-nohp-penerima="' . htmlspecialchars($row['no_hp_penerima']) . '"
+              data-tgl="' . htmlspecialchars($row['tanggal_pengiriman']) . '"
+              data-noplat="' . htmlspecialchars($row['no_plat_id']) . '"
+              data-kelas="' . htmlspecialchars($row['kelas_id']) . '"
+              data-tujuan="' . htmlspecialchars($tujuanText) . '"
+              data-status="' . htmlspecialchars($statusText) . '"
+              data-metode="' . htmlspecialchars($metodeText) . '"
+              data-jumlah="' . htmlspecialchars($row['jumlah']) . '"
+              title="Kwitansi Thermal Kasir">
+              <i class="fas fa-box"></i>
+            </button>
             <a href="cetak_resi.php?id=' . $row['id_pengiriman'] . '" target="_blank" class="btn btn-primary btn-sm btn-resi-paket" title="Cetak Resi Cargo / Paket" style="background-color: #0b3b7b; border-color: #082852; color: #fff;">
               <i class="fas fa-boxes"></i>
             </a>';
