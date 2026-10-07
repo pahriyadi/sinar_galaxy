@@ -563,16 +563,25 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                     <div class="col-md-5 text-right no-print mt-2 mt-md-0">
                         <?php 
                         $tiket_ids = [];
+                        $resi_ids = [];
                         foreach ($rekap as $r_item) {
                             if ($r_item['jenis_transaksi'] === 'Tiket') {
                                 $tiket_ids[] = (int)$r_item['id_transaksi'];
+                            } elseif ($r_item['jenis_transaksi'] === 'Paket') {
+                                $resi_ids[] = (int)$r_item['id_transaksi'];
                             }
                         }
                         $tiket_ids_str = implode(',', $tiket_ids);
+                        $resi_ids_str = implode(',', $resi_ids);
                         ?>
                         <?php if (!empty($tiket_ids_str)): ?>
                         <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-info btn-sm btn-flat font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Tiket penumpang pada manifes ini">
                             <i class="fas fa-ticket-alt mr-1"></i> Cetak E-Tiket (<?= count($tiket_ids) ?>)
+                        </a>
+                        <?php endif; ?>
+                        <?php if (!empty($resi_ids_str)): ?>
+                        <a href="../data_pengiriman/cetak_resi.php?id=<?= $resi_ids_str ?>" target="_blank" class="btn btn-success btn-sm btn-flat font-weight-bold" style="background-color: #0d9f4f; border-color: #076e34; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Resi paket / kargo pada manifes ini">
+                            <i class="fas fa-boxes mr-1"></i> Cetak E-Resi (<?= count($resi_ids) ?>)
                         </a>
                         <?php endif; ?>
                         <button type="button" class="btn btn-default btn-sm btn-flat" onclick="previewPrint()" style="border: 1px solid #b8b8b8; background: #ffffff; font-weight: 600; margin-right: 6px;">
@@ -794,7 +803,9 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
                                                     <i class="fas fa-ticket-alt mr-1"></i> E-Tiket
                                                 </a>
                                             <?php else: ?>
-                                                <span class="text-muted">-</span>
+                                                <a href="../data_pengiriman/cetak_resi.php?id=<?= $row['id_transaksi'] ?>" target="_blank" class="btn btn-xs btn-success font-weight-bold" style="background-color: #0d9f4f; border-color: #076e34; color: #ffffff; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;" title="Cetak E-Resi Paket / Cargo">
+                                                    <i class="fas fa-boxes mr-1"></i> E-Resi
+                                                </a>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
