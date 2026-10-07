@@ -970,11 +970,11 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
     .bp-barcode-bottom-row {
       display: flex;
       flex-direction: column;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .bp-barcode-img {
-      height: 34px;
+      height: 30px;
       width: 220px;
     }
 
@@ -985,6 +985,59 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       line-height: 1.25;
       text-transform: uppercase;
       margin-top: 3px;
+    }
+
+    .bp-payment-box {
+      margin-top: 6px;
+      padding: 4px 8px;
+      background: #f8fafc;
+      border: 1px dashed #94a3b8;
+      border-radius: 4px;
+    }
+
+    .bp-payment-header {
+      font-size: 8px;
+      font-weight: 800;
+      color: #0b3b7b;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 2px;
+    }
+
+    .bp-payment-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px 8px;
+      font-size: 8px;
+    }
+
+    .bp-pay-item {
+      display: flex;
+      gap: 4px;
+      align-items: baseline;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bp-pay-lbl {
+      font-weight: 700;
+      color: #475569;
+      font-size: 7.5px;
+      flex-shrink: 0;
+    }
+
+    .bp-pay-val {
+      font-weight: 800;
+      color: #0f172a;
+      font-size: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Vertical Divider with Strip Barcode / Perforation */
@@ -1803,6 +1856,37 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
 
           </div>
 
+          <!-- INFORMASI PEMBAYARAN LENGKAP -->
+          <div class="bp-payment-box">
+            <div class="bp-payment-header">
+              <i class="fas fa-receipt mr-1"></i> INFORMASI PEMBAYARAN
+            </div>
+            <div class="bp-payment-grid">
+              <div class="bp-pay-item">
+                <span class="bp-pay-lbl">METODE:</span>
+                <span class="bp-pay-val"><?= htmlspecialchars($metodePembayaran) ?></span>
+              </div>
+              <div class="bp-pay-item">
+                <span class="bp-pay-lbl">NO. REF:</span>
+                <span class="bp-pay-val"><?= htmlspecialchars($noRef) ?></span>
+              </div>
+              <div class="bp-pay-item">
+                <span class="bp-pay-lbl">PENGIRIM:</span>
+                <span class="bp-pay-val"><?= htmlspecialchars($namaPengirim) ?></span>
+              </div>
+              <div class="bp-pay-item">
+                <span class="bp-pay-lbl">TGL TRANSFER:</span>
+                <span class="bp-pay-val"><?= htmlspecialchars($tglTransferDisplay) ?></span>
+              </div>
+              <?php if (!empty($catatan) && $catatan !== '-'): ?>
+              <div class="bp-pay-item" style="grid-column: span 2;">
+                <span class="bp-pay-lbl">CATATAN:</span>
+                <span class="bp-pay-val"><?= htmlspecialchars($catatan) ?></span>
+              </div>
+              <?php endif; ?>
+            </div>
+          </div>
+
           <!-- Bottom Main: Barcode 1D + Red Warning Notes -->
           <div class="bp-barcode-bottom-row">
             <svg id="barcode_th80_<?= $idx ?>" class="bp-barcode-img"></svg>
@@ -1858,6 +1942,10 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
             <div class="bp-stub-row">
               <span class="bp-stub-lbl">ARMADA</span>
               <span class="bp-stub-val"><?= htmlspecialchars(strtoupper($noPlat)) ?></span>
+            </div>
+            <div class="bp-stub-row">
+              <span class="bp-stub-lbl">BAYAR</span>
+              <span class="bp-stub-val" style="font-size: 8px;"><?= htmlspecialchars($metodePembayaran) ?></span>
             </div>
             <div class="bp-stub-row">
               <span class="bp-stub-lbl">STATUS</span>
@@ -1926,6 +2014,11 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
           <td style="font-weight: bold;">Plat/Armada</td>
           <td>:</td>
           <td><?= htmlspecialchars($noPlat) ?> (<?= htmlspecialchars($kelasTravel) ?>)</td>
+        </tr>
+        <tr>
+          <td style="font-weight: bold;">Pembayaran</td>
+          <td>:</td>
+          <td><?= htmlspecialchars($metodePembayaran) ?><?= !empty($noRef) && $noRef !== '-' ? ' (' . htmlspecialchars($noRef) . ')' : '' ?></td>
         </tr>
         <tr>
           <td style="font-weight: bold;">Tarif</td>
