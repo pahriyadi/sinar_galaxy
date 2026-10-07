@@ -1396,6 +1396,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       <button type="button" onclick="downloadPDFTiket()" class="action-btn" style="background: #dc2626; color: #ffffff;" title="Download dokumen PDF resmi">
         <i class="fas fa-file-pdf"></i> Download PDF
       </button>
+      <button type="button" onclick="openPanduanModal()" class="action-btn" style="background: #f59e0b; color: #ffffff;" title="Tips & Panduan Pengaturan Cetak Browser">
+        <i class="fas fa-lightbulb"></i> Tips Cetak
+      </button>
       <button type="button" onclick="window.print()" class="action-btn btn-print">
         <i class="fas fa-print"></i> Cetak Tiket
       </button>
@@ -2443,7 +2446,77 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       url.searchParams.set('format', format);
       window.history.replaceState({}, '', url);
     }
+
+    // Modal Panduan Cetak
+    function openPanduanModal() {
+      const m = document.getElementById('modalPanduanCetak');
+      if (m) m.style.display = 'flex';
+    }
+
+    function closePanduanModal() {
+      const m = document.getElementById('modalPanduanCetak');
+      if (m) m.style.display = 'none';
+    }
   </script>
+
+  <!-- Modal Panduan Tips Cetak Browser -->
+  <div id="modalPanduanCetak" class="no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; width: 92%; max-width: 620px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+      <div style="background: linear-gradient(135deg, #0b3b7b 0%, #1e5bb0 100%); color: #ffffff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 16px;">
+          <i class="fas fa-lightbulb" style="color: #fbbf24; font-size: 20px;"></i>
+          <span>Tips & Panduan Pengaturan Cetak Browser</span>
+        </div>
+        <button type="button" onclick="closePanduanModal()" style="background: transparent; border: none; color: #ffffff; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+      
+      <div style="padding: 20px; max-height: 75vh; overflow-y: auto; font-size: 13px; line-height: 1.6; color: #334155;">
+        
+        <div style="margin-bottom: 14px; padding: 12px 14px; background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 8px;">
+          <div style="color: #166534; font-size: 13.5px; font-weight: 800; margin-bottom: 4px;">
+            <i class="fas fa-ticket-alt mr-1"></i> 1. Format Boarding Pass 80mm (Rekomendasi)
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+            <tr><td style="width: 38%; font-weight: 700;">Layout / Orientasi</td><td>: <strong>Landscape (Mendatar)</strong></td></tr>
+            <tr><td style="font-weight: 700;">Ukuran Kertas (Paper Size)</td><td>: <strong>80mm Roll</strong> / <strong>User Defined (200 x 80 mm)</strong></td></tr>
+            <tr><td style="font-weight: 700;">Margin (Margins)</td><td>: <strong>None</strong> atau <strong>Minimum (0 - 2mm)</strong></td></tr>
+            <tr><td style="font-weight: 700;">Skala (Scale)</td><td>: <strong>100%</strong> atau <strong>Fit to Printable Area</strong></td></tr>
+            <tr><td style="font-weight: 700;">Grafik Latar Belakang</td><td>: <span style="color: #15803d; font-weight: 800;">✓ Centang (Background graphics)</span></td></tr>
+          </table>
+        </div>
+
+        <div style="margin-bottom: 14px; padding: 12px 14px; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
+          <div style="color: #1e40af; font-size: 13.5px; font-weight: 800; margin-bottom: 4px;">
+            <i class="fas fa-file-invoice mr-1"></i> 2. Format A4 Warna Resmi
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+            <tr><td style="width: 38%; font-weight: 700;">Layout / Orientasi</td><td>: <strong>Portrait (Tegak)</strong></td></tr>
+            <tr><td style="font-weight: 700;">Ukuran Kertas</td><td>: <strong>A4</strong></td></tr>
+            <tr><td style="font-weight: 700;">Margin</td><td>: <strong>Default</strong> atau <strong>Minimum</strong></td></tr>
+            <tr><td style="font-weight: 700;">Grafik Latar Belakang</td><td>: <span style="color: #15803d; font-weight: 800;">✓ Centang (Background graphics)</span></td></tr>
+          </table>
+        </div>
+
+        <div style="padding: 12px 14px; background: #fefce8; border-left: 4px solid #eab308; border-radius: 8px;">
+          <div style="color: #854d0e; font-size: 13.5px; font-weight: 800; margin-bottom: 4px;">
+            <i class="fas fa-mobile-alt mr-1"></i> 3. Format Mini Thermal 58mm
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+            <tr><td style="width: 38%; font-weight: 700;">Layout / Orientasi</td><td>: <strong>Portrait (Tegak)</strong></td></tr>
+            <tr><td style="font-weight: 700;">Ukuran Kertas</td><td>: <strong>58mm Roll</strong></td></tr>
+            <tr><td style="font-weight: 700;">Margin</td><td>: <strong>None (0mm)</strong></td></tr>
+          </table>
+        </div>
+
+        <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" onclick="closePanduanModal()" class="action-btn btn-close-window" style="padding: 8px 16px; font-size: 12.5px;">Tutup</button>
+          <button type="button" onclick="closePanduanModal(); window.print();" class="action-btn btn-print" style="padding: 8px 18px; font-size: 12.5px;">
+            <i class="fas fa-print mr-1"></i> Buka Dialog Cetak
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <?php if (isset($_GET['autoprint']) && $_GET['autoprint'] == '1' && !empty($tickets)): ?>
     <script>

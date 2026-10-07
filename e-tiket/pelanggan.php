@@ -1216,6 +1216,9 @@ if ($isValid && $ticket) {
         <button type="button" onclick="downloadPDF()" class="btn-action btn-download-pdf" title="Download dokumen PDF resmi">
           <i class="fas fa-file-pdf"></i> Unduh PDF
         </button>
+        <button type="button" onclick="openPanduanModal()" class="btn-action" style="background: #f59e0b; color: #ffffff;" title="Tips & Panduan Pengaturan Cetak Browser">
+          <i class="fas fa-lightbulb"></i> Tips Cetak
+        </button>
         <button type="button" onclick="window.print()" class="btn-action btn-print" title="Cetak tiket">
           <i class="fas fa-print"></i> Cetak
         </button>
@@ -1705,7 +1708,52 @@ if ($isValid && $ticket) {
           alert('Gagal membuat PDF: ' + e.message);
         }
       }
+
+      function openPanduanModal() {
+        const m = document.getElementById('modalPanduanCetak');
+        if (m) m.style.display = 'flex';
+      }
+
+      function closePanduanModal() {
+        const m = document.getElementById('modalPanduanCetak');
+        if (m) m.style.display = 'none';
+      }
     </script>
+
+    <!-- Modal Panduan Tips Cetak Browser -->
+    <div id="modalPanduanCetak" class="no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+      <div style="background: #ffffff; width: 92%; max-width: 620px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+        <div style="background: linear-gradient(135deg, #0b3b7b 0%, #1e5bb0 100%); color: #ffffff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 16px;">
+            <i class="fas fa-lightbulb" style="color: #fbbf24; font-size: 20px;"></i>
+            <span>Tips & Panduan Pengaturan Cetak Browser</span>
+          </div>
+          <button type="button" onclick="closePanduanModal()" style="background: transparent; border: none; color: #ffffff; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+        
+        <div style="padding: 20px; max-height: 75vh; overflow-y: auto; font-size: 13px; line-height: 1.6; color: #334155;">
+          <div style="margin-bottom: 14px; padding: 12px 14px; background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 8px;">
+            <div style="color: #166534; font-size: 13.5px; font-weight: 800; margin-bottom: 4px;">
+              <i class="fas fa-ticket-alt mr-1"></i> Format Boarding Pass (Rekomendasi)
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+              <tr><td style="width: 38%; font-weight: 700;">Layout / Orientasi</td><td>: <strong>Landscape (Mendatar)</strong></td></tr>
+              <tr><td style="font-weight: 700;">Ukuran Kertas (Paper Size)</td><td>: <strong>80mm Roll</strong> / <strong>User Defined (200 x 80 mm)</strong></td></tr>
+              <tr><td style="font-weight: 700;">Margin (Margins)</td><td>: <strong>None</strong> atau <strong>Minimum (0 - 2mm)</strong></td></tr>
+              <tr><td style="font-weight: 700;">Skala (Scale)</td><td>: <strong>100%</strong> atau <strong>Fit to Printable Area</strong></td></tr>
+              <tr><td style="font-weight: 700;">Grafik Latar Belakang</td><td>: <span style="color: #15803d; font-weight: 800;">✓ Centang (Background graphics)</span></td></tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" onclick="closePanduanModal()" class="btn-action" style="background: #64748b; color: #fff; padding: 8px 16px; font-size: 12.5px;">Tutup</button>
+            <button type="button" onclick="closePanduanModal(); window.print();" class="btn-action btn-print" style="padding: 8px 18px; font-size: 12.5px;">
+              <i class="fas fa-print mr-1"></i> Buka Dialog Cetak
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <?php endif; ?>
 
