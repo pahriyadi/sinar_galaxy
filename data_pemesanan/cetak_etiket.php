@@ -1689,10 +1689,10 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
           </div>
 
           <div class="bottom-field-row">
-            <div class="bfield-icon"><i class="fas fa-user-check"></i></div>
-            <div class="bfield-label">Nama Pengirim</div>
+            <div class="bfield-icon"><i class="fas fa-check-circle text-success"></i></div>
+            <div class="bfield-label">Status Pembayaran</div>
             <div class="field-separator">:</div>
-            <div class="bfield-val-box"><?= htmlspecialchars($namaPengirim) ?></div>
+            <div class="bfield-val-box" style="color: #0d8a43; font-weight: 800;">LUNAS (TERBAYAR)</div>
           </div>
 
           <div class="bottom-field-row">
@@ -1871,12 +1871,12 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
                 <span class="bp-pay-val"><?= htmlspecialchars($noRef) ?></span>
               </div>
               <div class="bp-pay-item">
-                <span class="bp-pay-lbl">PENGIRIM:</span>
-                <span class="bp-pay-val"><?= htmlspecialchars($namaPengirim) ?></span>
+                <span class="bp-pay-lbl">TGL BAYAR:</span>
+                <span class="bp-pay-val"><?= htmlspecialchars($tglTransferDisplay) ?></span>
               </div>
               <div class="bp-pay-item">
-                <span class="bp-pay-lbl">TGL TRANSFER:</span>
-                <span class="bp-pay-val"><?= htmlspecialchars($tglTransferDisplay) ?></span>
+                <span class="bp-pay-lbl">STATUS:</span>
+                <span class="bp-pay-val" style="color: #0d8a43; font-weight: 900;">LUNAS</span>
               </div>
               <?php if (!empty($catatan) && $catatan !== '-'): ?>
               <div class="bp-pay-item" style="grid-column: span 2;">
