@@ -1301,28 +1301,36 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
         border: 1.5px solid #a2c1e8 !important;
       }
 
-      /* Print Thermal 80mm */
+      /* Print Thermal 80mm Boarding Pass */
+      body.view-format-thermal80 {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
       body.view-format-thermal80 .thermal-wrapper.mode-80 {
         display: block !important;
-        width: 80mm !important;
-        max-width: 80mm !important;
+        width: 195mm !important;
+        max-width: 200mm !important;
         margin: 0 auto !important;
-        padding: 4px 2px !important;
-        border: none !important;
+        padding: 3mm 4mm !important;
+        border: 1px solid #000000 !important;
         box-shadow: none !important;
         page-break-after: always !important;
+        break-inside: avoid !important;
       }
 
       /* Print Thermal 58mm */
       body.view-format-thermal58 .thermal-wrapper.mode-58 {
         display: block !important;
-        width: 58mm !important;
+        width: 56mm !important;
         max-width: 58mm !important;
         margin: 0 auto !important;
-        padding: 3px 1px !important;
+        padding: 2mm 1mm !important;
         border: none !important;
         box-shadow: none !important;
         page-break-after: always !important;
+        break-inside: avoid !important;
       }
 
       /* Page Rules */
@@ -1332,13 +1340,13 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       }
 
       body.view-format-thermal80 @page {
-        size: 80mm auto;
-        margin: 2mm;
+        size: 205mm 80mm landscape;
+        margin: 2mm 3mm;
       }
 
       body.view-format-thermal58 @page {
         size: 58mm auto;
-        margin: 1mm;
+        margin: 0;
       }
     }
   </style>
@@ -1438,6 +1446,10 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
         1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
       ];
+      $bulanIndoShort = [
+        1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      ];
       $hariIndo = [
         0 => 'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
       ];
@@ -1445,15 +1457,18 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       if ($timeBerangkat) {
         $hariTeks = $hariIndo[date('w', $timeBerangkat)];
         $tglTeks = date('j', $timeBerangkat) . ' ' . $bulanIndo[(int)date('n', $timeBerangkat)] . ' ' . date('Y', $timeBerangkat);
+        $tglTeksSingkat = date('j', $timeBerangkat) . ' ' . $bulanIndoShort[(int)date('n', $timeBerangkat)] . ' ' . date('Y', $timeBerangkat);
         $jamTeks = date('H:i', $timeBerangkat);
         if ($jamTeks === '00:00') {
           $jamTeks = '19:30';
         }
         $jamTeksDisplay = $jamTeks . ' WITA';
         $tglBerangkatDisplay = $hariTeks . ', ' . $tglTeks;
+        $tglBerangkatBoardingPass = $tglTeksSingkat;
         $tglBerangkatShort = date('d/m/Y', $timeBerangkat) . ' ' . $jamTeks . ' WITA';
       } else {
         $tglBerangkatDisplay = '-';
+        $tglBerangkatBoardingPass = '-';
         $tglBerangkatShort = '-';
         $jamTeksDisplay = '19:30 WITA';
       }
@@ -1796,7 +1811,7 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
             </div>
             <div class="bp-cell">
               <span class="bp-cell-label">TANGGAL (DATE)</span>
-              <span class="bp-cell-val"><?= htmlspecialchars($tglBerangkatDisplay) ?></span>
+              <span class="bp-cell-val"><?= htmlspecialchars($tglBerangkatBoardingPass) ?></span>
             </div>
             <div class="bp-cell">
               <div class="bp-class-group">

@@ -103,6 +103,10 @@ if ($isValid && $ticket) {
         1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
+    $bulanIndoShort = [
+        1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
     $hariIndo = [
         0 => 'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
     ];
@@ -110,14 +114,17 @@ if ($isValid && $ticket) {
     if ($timeBerangkat) {
         $hariTeks = $hariIndo[date('w', $timeBerangkat)];
         $tglTeks = date('j', $timeBerangkat) . ' ' . $bulanIndo[(int)date('n', $timeBerangkat)] . ' ' . date('Y', $timeBerangkat);
+        $tglTeksSingkat = date('j', $timeBerangkat) . ' ' . $bulanIndoShort[(int)date('n', $timeBerangkat)] . ' ' . date('Y', $timeBerangkat);
         $jamTeks = date('H:i', $timeBerangkat);
         if ($jamTeks === '00:00') {
             $jamTeks = '19:30';
         }
         $jamTeksDisplay = $jamTeks . ' WITA';
         $tglBerangkatDisplay = $hariTeks . ', ' . $tglTeks;
+        $tglBerangkatBoardingPass = $tglTeksSingkat;
     } else {
         $tglBerangkatDisplay = '-';
+        $tglBerangkatBoardingPass = '-';
         $jamTeksDisplay = '19:30 WITA';
     }
 
@@ -1135,13 +1142,29 @@ if ($isValid && $ticket) {
       body {
         background: #ffffff !important;
         padding: 0 !important;
+        margin: 0 !important;
       }
       .no-print {
         display: none !important;
       }
-      .ticket-sheet, .bp-card-wrapper {
-        margin: 0 !important;
+      .bp-card-wrapper {
+        width: 195mm !important;
+        max-width: 200mm !important;
+        margin: 0 auto !important;
+        padding: 3mm 4mm !important;
+        border: 1px solid #000000 !important;
         box-shadow: none !important;
+        page-break-after: always !important;
+        break-inside: avoid !important;
+      }
+      .ticket-sheet {
+        margin: 0 auto !important;
+        box-shadow: none !important;
+        page-break-after: always !important;
+      }
+      @page {
+        size: 205mm 80mm landscape;
+        margin: 2mm 3mm;
       }
     }
   </style>
@@ -1234,7 +1257,7 @@ if ($isValid && $ticket) {
             </div>
             <div class="bp-cell">
               <span class="bp-cell-label">TANGGAL (DATE)</span>
-              <span class="bp-cell-val"><?= htmlspecialchars($tglBerangkatDisplay) ?></span>
+              <span class="bp-cell-val"><?= htmlspecialchars($tglBerangkatBoardingPass) ?></span>
             </div>
             <div class="bp-cell">
               <div class="bp-class-group">
