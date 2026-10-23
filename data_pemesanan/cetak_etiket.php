@@ -1499,9 +1499,9 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       }
 
       $namaPengirim = $namaPenumpang;
-      $tglPesanRaw = $t['tanggal_pemesanan'];
-      $timePesan = strtotime($tglPesanRaw);
-      $tglTransferDisplay = $timePesan ? date('j', $timePesan) . ' ' . $bulanIndo[(int)date('n', $timePesan)] . ' ' . date('Y', $timePesan) : date('d/m/Y');
+      $tglBayarRaw = !empty($t['tanggal_pembayaran']) ? $t['tanggal_pembayaran'] : $t['tanggal_pemesanan'];
+      $timeBayar = strtotime($tglBayarRaw);
+      $tglTransferDisplay = $timeBayar ? date('j', $timeBayar) . ' ' . $bulanIndo[(int)date('n', $timeBayar)] . ' ' . date('Y', $timeBayar) : date('d/m/Y');
       $tglCetak = date('d/m/Y H:i');
       
       $catatan = !empty($t['keterangan']) ? $t['keterangan'] : (!empty($t['alamat_id']) ? 'Jemput: ' . $t['alamat_id'] : 'Armada: ' . $noPlat . ' / ' . $kelasTravel);

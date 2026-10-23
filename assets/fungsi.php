@@ -518,6 +518,10 @@ function tambahPemesanan($data) {
     $no_ktp_id = isset($data['no_ktp_id']) ? mysqli_real_escape_string($conn, $data['no_ktp_id']) : '';
     $no_hp_id = isset($data['no_hp_id']) ? mysqli_real_escape_string($conn, $data['no_hp_id']) : '';
     $tanggal_pemesanan = isset($data['tanggal_pemesanan']) ? mysqli_real_escape_string($conn, $data['tanggal_pemesanan']) : '';
+    $tanggal_pembayaran = !empty($data['tanggal_pembayaran']) ? mysqli_real_escape_string($conn, $data['tanggal_pembayaran']) : date('Y-m-d H:i:s');
+    if (strlen($tanggal_pembayaran) === 10) {
+        $tanggal_pembayaran .= ' ' . date('H:i:s');
+    }
     $tanggal_berangkat = isset($data['tanggal_berangkat']) ? mysqli_real_escape_string($conn, $data['tanggal_berangkat']) : '';
     $no_plat_id = isset($data['no_plat_id']) ? mysqli_real_escape_string($conn, $data['no_plat_id']) : '';
     $kelas_id = isset($data['kelas_id']) ? mysqli_real_escape_string($conn, $data['kelas_id']) : '';
@@ -543,7 +547,7 @@ function tambahPemesanan($data) {
                     'method_id' => (int)$payment['method_id'],
                     'amount' => (float)$payment['amount'],
                     'rekening_id' => (int)$payment['rekening_id'],
-                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : substr($tanggal_pembayaran, 0, 10)
                 ];
                 $total_amount += (float)$payment['amount'];
             }
@@ -581,7 +585,7 @@ function tambahPemesanan($data) {
             'method_id' => (int)$metode_pembayaran_id,
             'amount' => (float)$harga_id,
             'rekening_id' => (int)$jenis_rekening_id,
-            'payment_date' => (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+            'payment_date' => substr($tanggal_pembayaran, 0, 10)
         ]];
         $payment_details = 'Single payment method';
     }
@@ -613,9 +617,9 @@ function tambahPemesanan($data) {
     }
 
     $sql = "INSERT INTO data_pemesanan (
-        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pemesanan, tanggal_berangkat, no_plat_id, kelas_id, harga_id, kursi, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, username, asal_po, keterangan
+        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, no_plat_id, kelas_id, harga_id, kursi, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, username, asal_po, keterangan
     ) VALUES (
-        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pemesanan', '$tanggal_berangkat', '$no_plat_id', '$kelas_id', '$harga_id', $kursi, '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', '$username', '$asal_po', '$keterangan'
+        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pemesanan', '$tanggal_pembayaran', '$tanggal_berangkat', '$no_plat_id', '$kelas_id', '$harga_id', $kursi, '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', '$username', '$asal_po', '$keterangan'
     )";
     $result = confirmQuery(mysqli_query($conn, $sql));
     if ($result) {
@@ -655,6 +659,10 @@ function updatePemesanan($data) {
     }
 
     $tanggal_pemesanan = isset($data['tanggal_pemesanan']) ? mysqli_real_escape_string($conn, $data['tanggal_pemesanan']) : '';
+    $tanggal_pembayaran = !empty($data['tanggal_pembayaran']) ? mysqli_real_escape_string($conn, $data['tanggal_pembayaran']) : date('Y-m-d H:i:s');
+    if (strlen($tanggal_pembayaran) === 10) {
+        $tanggal_pembayaran .= ' ' . date('H:i:s');
+    }
     $tanggal_berangkat = isset($data['tanggal_berangkat']) ? mysqli_real_escape_string($conn, $data['tanggal_berangkat']) : '';
     $no_plat_id = isset($data['no_plat_id']) ? mysqli_real_escape_string($conn, $data['no_plat_id']) : '';
     $kelas_id = isset($data['kelas_id']) ? mysqli_real_escape_string($conn, $data['kelas_id']) : '';
@@ -680,7 +688,7 @@ function updatePemesanan($data) {
                     'method_id' => (int)$payment['method_id'],
                     'amount' => (float)$payment['amount'],
                     'rekening_id' => (int)$payment['rekening_id'],
-                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : substr($tanggal_pembayaran, 0, 10)
                 ];
                 $total_amount += (float)$payment['amount'];
             }
@@ -718,7 +726,7 @@ function updatePemesanan($data) {
             'method_id' => (int)$metode_pembayaran_id,
             'amount' => (float)$harga_id,
             'rekening_id' => (int)$jenis_rekening_id,
-            'payment_date' => (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+            'payment_date' => substr($tanggal_pembayaran, 0, 10)
         ]];
         $payment_details = 'Single payment method';
     }
@@ -751,7 +759,7 @@ function updatePemesanan($data) {
     }
 
     $sql = "UPDATE data_pemesanan SET 
-        nip_sgt_id='$nip_sgt_id', nama_id='$nama_id', alamat_id='$alamat_id', no_ktp_id='$no_ktp_id', no_hp_id='$no_hp_id', tanggal_pemesanan='$tanggal_pemesanan', tanggal_berangkat='$tanggal_berangkat', no_plat_id='$no_plat_id', kelas_id='$kelas_id', harga_id='$harga_id', kursi=$kursi, tujuan_id='$tujuan_id', status_pembayaran_id='$status_pembayaran_id', metode_pembayaran_id='$metode_pembayaran_id', jenis_rekening_id='$jenis_rekening_id', payment_methods='$payment_methods_json', payment_details='$payment_details', username='$username', asal_po='$asal_po', keterangan='$keterangan'
+        nip_sgt_id='$nip_sgt_id', nama_id='$nama_id', alamat_id='$alamat_id', no_ktp_id='$no_ktp_id', no_hp_id='$no_hp_id', tanggal_pemesanan='$tanggal_pemesanan', tanggal_pembayaran='$tanggal_pembayaran', tanggal_berangkat='$tanggal_berangkat', no_plat_id='$no_plat_id', kelas_id='$kelas_id', harga_id='$harga_id', kursi=$kursi, tujuan_id='$tujuan_id', status_pembayaran_id='$status_pembayaran_id', metode_pembayaran_id='$metode_pembayaran_id', jenis_rekening_id='$jenis_rekening_id', payment_methods='$payment_methods_json', payment_details='$payment_details', username='$username', asal_po='$asal_po', keterangan='$keterangan'
         WHERE id_pemesanan=$id";
     // old data sebelum update
     if (!function_exists('getOldData')) { require_once __DIR__ . '/logging_helper.php'; }
@@ -800,6 +808,10 @@ function tambahPengiriman($data) {
     $no_ktp_id = isset($data['no_ktp_id']) ? mysqli_real_escape_string($conn, $data['no_ktp_id']) : '';
     $no_hp_id = isset($data['no_hp_id']) ? mysqli_real_escape_string($conn, $data['no_hp_id']) : '';
     $tanggal_pengiriman = isset($data['tanggal_pengiriman']) ? mysqli_real_escape_string($conn, $data['tanggal_pengiriman']) : '';
+    $tanggal_pembayaran = !empty($data['tanggal_pembayaran']) ? mysqli_real_escape_string($conn, $data['tanggal_pembayaran']) : date('Y-m-d H:i:s');
+    if (strlen($tanggal_pembayaran) === 10) {
+        $tanggal_pembayaran .= ' ' . date('H:i:s');
+    }
     $jenis_barang = isset($data['jenis_barang']) ? mysqli_real_escape_string($conn, $data['jenis_barang']) : '';
     $nama_penerima = isset($data['nama_penerima']) ? mysqli_real_escape_string($conn, $data['nama_penerima']) : '';
     $no_hp_penerima = isset($data['no_hp_penerima']) ? mysqli_real_escape_string($conn, $data['no_hp_penerima']) : '';
@@ -826,7 +838,7 @@ function tambahPengiriman($data) {
                     'method_id' => (int)$payment['method_id'],
                     'amount' => (float)$payment['amount'],
                     'rekening_id' => (int)$payment['rekening_id'],
-                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : substr($tanggal_pembayaran, 0, 10)
                 ];
                 $total_amount += (float)$payment['amount'];
             }
@@ -864,7 +876,7 @@ function tambahPengiriman($data) {
             'method_id' => (int)$metode_pembayaran_id,
             'amount' => (float)$jumlah,
             'rekening_id' => (int)$jenis_rekening_id,
-            'payment_date' => (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+            'payment_date' => substr($tanggal_pembayaran, 0, 10)
         ]];
         $payment_details = 'Single payment method';
     }
@@ -897,9 +909,9 @@ function tambahPengiriman($data) {
     }
 
     $sql = "INSERT INTO data_pengiriman (
-        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pengiriman, jenis_barang, nama_penerima, no_hp_penerima, no_plat_id, kelas_id, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, jumlah, user_id, asal_po_id, keterangan
+        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pengiriman, tanggal_pembayaran, jenis_barang, nama_penerima, no_hp_penerima, no_plat_id, kelas_id, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, jumlah, user_id, asal_po_id, keterangan
     ) VALUES (
-        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pengiriman', '$jenis_barang', '$nama_penerima', '$no_hp_penerima', '$no_plat_id', '$kelas_id', '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', $jumlah, '$user_id', '$asal_po_id', '$keterangan'
+        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pengiriman', '$tanggal_pembayaran', '$jenis_barang', '$nama_penerima', '$no_hp_penerima', '$no_plat_id', '$kelas_id', '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', $jumlah, '$user_id', '$asal_po_id', '$keterangan'
     )";
     $result = confirmQuery(mysqli_query($conn, $sql));
     if ($result) {
@@ -927,6 +939,10 @@ function updatePengiriman($data) {
     $no_ktp_id = isset($data['no_ktp_id']) ? mysqli_real_escape_string($conn, $data['no_ktp_id']) : '';
     $no_hp_id = isset($data['no_hp_id']) ? mysqli_real_escape_string($conn, $data['no_hp_id']) : '';
     $tanggal_pengiriman = isset($data['tanggal_pengiriman']) ? mysqli_real_escape_string($conn, $data['tanggal_pengiriman']) : '';
+    $tanggal_pembayaran = !empty($data['tanggal_pembayaran']) ? mysqli_real_escape_string($conn, $data['tanggal_pembayaran']) : date('Y-m-d H:i:s');
+    if (strlen($tanggal_pembayaran) === 10) {
+        $tanggal_pembayaran .= ' ' . date('H:i:s');
+    }
     $jenis_barang = isset($data['jenis_barang']) ? mysqli_real_escape_string($conn, $data['jenis_barang']) : '';
     $nama_penerima = isset($data['nama_penerima']) ? mysqli_real_escape_string($conn, $data['nama_penerima']) : '';
     $no_hp_penerima = isset($data['no_hp_penerima']) ? mysqli_real_escape_string($conn, $data['no_hp_penerima']) : '';
@@ -953,7 +969,7 @@ function updatePengiriman($data) {
                     'method_id' => (int)$payment['method_id'],
                     'amount' => (float)$payment['amount'],
                     'rekening_id' => (int)$payment['rekening_id'],
-                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+                    'payment_date' => !empty($payment['payment_date']) ? $payment['payment_date'] : substr($tanggal_pembayaran, 0, 10)
                 ];
                 $total_amount += (float)$payment['amount'];
             }
@@ -991,7 +1007,7 @@ function updatePengiriman($data) {
             'method_id' => (int)$metode_pembayaran_id,
             'amount' => (float)$jumlah,
             'rekening_id' => (int)$jenis_rekening_id,
-            'payment_date' => (isset($tanggal_pemesanan) ? substr($tanggal_pemesanan, 0, 10) : (isset($tanggal_pengiriman) ? substr($tanggal_pengiriman, 0, 10) : date('Y-m-d')))
+            'payment_date' => substr($tanggal_pembayaran, 0, 10)
         ]];
         $payment_details = 'Single payment method';
     }
@@ -1025,7 +1041,7 @@ function updatePengiriman($data) {
     }
 
     $sql = "UPDATE data_pengiriman SET 
-        nip_sgt_id='$nip_sgt_id', nama_id='$nama_id', alamat_id='$alamat_id', no_ktp_id='$no_ktp_id', no_hp_id='$no_hp_id', tanggal_pengiriman='$tanggal_pengiriman', jenis_barang='$jenis_barang', nama_penerima='$nama_penerima', no_hp_penerima='$no_hp_penerima', no_plat_id='$no_plat_id', kelas_id='$kelas_id', tujuan_id='$tujuan_id', status_pembayaran_id='$status_pembayaran_id', metode_pembayaran_id='$metode_pembayaran_id', jenis_rekening_id='$jenis_rekening_id', payment_methods='$payment_methods_json', payment_details='$payment_details', jumlah=$jumlah, user_id='$user_id', asal_po_id='$asal_po_id', keterangan='$keterangan'
+        nip_sgt_id='$nip_sgt_id', nama_id='$nama_id', alamat_id='$alamat_id', no_ktp_id='$no_ktp_id', no_hp_id='$no_hp_id', tanggal_pengiriman='$tanggal_pengiriman', tanggal_pembayaran='$tanggal_pembayaran', jenis_barang='$jenis_barang', nama_penerima='$nama_penerima', no_hp_penerima='$no_hp_penerima', no_plat_id='$no_plat_id', kelas_id='$kelas_id', tujuan_id='$tujuan_id', status_pembayaran_id='$status_pembayaran_id', metode_pembayaran_id='$metode_pembayaran_id', jenis_rekening_id='$jenis_rekening_id', payment_methods='$payment_methods_json', payment_details='$payment_details', jumlah=$jumlah, user_id='$user_id', asal_po_id='$asal_po_id', keterangan='$keterangan'
         WHERE id_pengiriman=$id";
     if (!function_exists('getOldData')) { require_once __DIR__ . '/logging_helper.php'; }
     $old_data = getOldData('data_pengiriman', $id);

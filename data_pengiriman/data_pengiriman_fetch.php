@@ -132,6 +132,7 @@ if ($result) {
               data-ktp="' . htmlspecialchars($row['no_ktp_id']) . '"
               data-hp="' . htmlspecialchars($row['no_hp_id']) . '"
               data-tgl="' . htmlspecialchars($row['tanggal_pengiriman']) . '"
+              data-tglbayar="' . htmlspecialchars($row['tanggal_pembayaran'] ?? '') . '"
               data-barang="' . htmlspecialchars($row['jenis_barang']) . '"
               data-penerima="' . htmlspecialchars($row['nama_penerima']) . '"
               data-hppenerima="' . htmlspecialchars($row['no_hp_penerima']) . '"

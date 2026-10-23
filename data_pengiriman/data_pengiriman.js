@@ -96,6 +96,14 @@ $(document).ready(function () {
 
     // 4. Set field lainnya
     $('#tanggal_pengiriman').val(tgl);
+    var tglbayar = $btn.data('tglbayar') || '';
+    if (tglbayar) {
+      $('#tanggal_pembayaran').val(tglbayar.split('T')[0].split(' ')[0]);
+    } else if (tgl) {
+      $('#tanggal_pembayaran').val(tgl.split('T')[0].split(' ')[0]);
+    } else {
+      $('#tanggal_pembayaran').val(new Date().toISOString().split('T')[0]);
+    }
     $('#nama_penerima').val($btn.data('penerima') || '');
     $('#no_hp_penerima').val($btn.data('hppenerima') || '');
     $('#no_plat_id').val($btn.data('plat') || '');
@@ -167,6 +175,7 @@ $(document).ready(function () {
   $('#modalForm').on('hidden.bs.modal', function () {
     $('#formPengiriman')[0].reset();
     $('#id_pengiriman').val('');
+    $('#tanggal_pembayaran').val(new Date().toISOString().split('T')[0]);
     $('#nip_sgt_id').val('').trigger('change');
     $('#jenis_barang').val('').trigger('change');
     $('#btnSave').attr('name', 'tambah').html('<i class="fas fa-save mr-1"></i> Simpan Pengiriman');

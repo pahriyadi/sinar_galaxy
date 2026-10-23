@@ -652,7 +652,7 @@ if ($result) {
               </div>
               <div class="card-body p-2">
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="form-group mb-2">
                       <label class="text-xs font-weight-bold text-muted mb-1" for="status_pembayaran_id">Status Pembayaran <span class="text-danger">*</span></label>
                       <select class="form-control form-control-sm" name="status_pembayaran_id" id="status_pembayaran_id" required style="font-size: 13px;">
@@ -667,7 +667,13 @@ if ($result) {
                       </select>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
+                    <div class="form-group mb-2">
+                      <label class="text-xs font-weight-bold text-muted mb-1" for="tanggal_pembayaran">Tgl Pembayaran <span class="text-danger">*</span></label>
+                      <input type="date" class="form-control form-control-sm" name="tanggal_pembayaran" id="tanggal_pembayaran" value="<?= date('Y-m-d') ?>" required style="font-size: 13px;">
+                    </div>
+                  </div>
+                  <div class="col-md-3">
                     <div class="form-group mb-2">
                       <label class="text-xs font-weight-bold text-muted mb-1" for="payment_type">Tipe Pembayaran <span class="text-danger">*</span></label>
                       <select class="form-control form-control-sm" name="payment_type" id="payment_type" onchange="togglePaymentMethod()" required style="font-size: 13px;">
@@ -677,7 +683,7 @@ if ($result) {
                       </select>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="form-group mb-2">
                       <label class="text-xs font-weight-bold text-muted mb-1" for="jenis_rekening_id">Rekening / Kasir Tujuan <span class="text-danger">*</span></label>
                       <select class="form-control form-control-sm" name="jenis_rekening_id" id="jenis_rekening_id" required style="font-size: 13px;">
@@ -1381,6 +1387,16 @@ if ($result) {
         } else {
           $('#tanggal_pemesanan').val('');
         }
+        // Format tanggal_pembayaran (date only)
+        if (data.tglbayar) {
+          var tglbayar = data.tglbayar.split('T')[0] || data.tglbayar.split(' ')[0];
+          $('#tanggal_pembayaran').val(tglbayar);
+        } else if (data.tglp) {
+          var tglp = data.tglp.split('T')[0] || data.tglp.split(' ')[0];
+          $('#tanggal_pembayaran').val(tglp);
+        } else {
+          $('#tanggal_pembayaran').val(new Date().toISOString().split('T')[0]);
+        }
         // Format tanggal_berangkat (datetime-local)
         if (data.tglb) {
           var tglb = data.tglb.replace(' ', 'T').slice(0, 16);
@@ -1412,15 +1428,18 @@ if ($result) {
           try {
             var pmStr = $('<textarea/>').html(data.paymentMethods).text();
             var paymentMethods = JSON.parse(pmStr);
-            if (paymentMethods.length > 0) {
+            if (paymentMethods.length > 1) {
               $('#payment_type').val('multiple');
               togglePaymentMethod();
               loadPaymentMethods(paymentMethods);
             } else {
               $('#payment_type').val('single');
               togglePaymentMethod();
-              $('#metode_pembayaran_id').val(paymentMethods[0].method_id);
-              $('#single_amount').val(paymentMethods[0].amount);
+              if (paymentMethods.length === 1) {
+                $('#metode_pembayaran_id').val(paymentMethods[0].method_id);
+                $('#single_amount').val(paymentMethods[0].amount);
+                $('#tanggal_pembayaran').val(paymentMethods[0].payment_date ? paymentMethods[0].payment_date.substring(0,10) : '');
+              }
             }
           } catch (e) {
             // Fallback to single payment
@@ -1440,6 +1459,8 @@ if ($result) {
       // Reset form when modal is closed
       $('#modalForm').on('hidden.bs.modal', function () {
         $('#formPemesanan')[0].reset();
+        $('#tanggal_pembayaran').val(new Date().toISOString().split('T')[0]);
+        $('#wrapper_tanggal_pembayaran').show();
         $('#singlePaymentMethod').hide();
         $('#multiplePaymentMethod').hide();
         $('#paymentMethodsContainer').empty();
@@ -1454,17 +1475,25 @@ if ($result) {
         if (paymentType === 'single') {
           $('#singlePaymentMethod').show();
           $('#multiplePaymentMethod').hide();
+          $('#wrapper_tanggal_pembayaran').show();
           $('#metode_pembayaran_id').prop('required', true);
+          $('#tanggal_pembayaran').prop('required', true);
           $('#single_amount').val($('#harga_id').val());
         } else if (paymentType === 'multiple') {
           $('#singlePaymentMethod').hide();
           $('#multiplePaymentMethod').show();
+          $('#wrapper_tanggal_pembayaran').hide();
           $('#metode_pembayaran_id').prop('required', false);
-          addPaymentMethod(); // Add first payment method
+          $('#tanggal_pembayaran').prop('required', false);
+          if ($('#paymentMethodsContainer .payment-method-row').length === 0) {
+            addPaymentMethod(); // Add first payment method if none
+          }
         } else {
           $('#singlePaymentMethod').hide();
           $('#multiplePaymentMethod').hide();
+          $('#wrapper_tanggal_pembayaran').hide();
           $('#metode_pembayaran_id').prop('required', false);
+          $('#tanggal_pembayaran').prop('required', false);
         }
       }
 

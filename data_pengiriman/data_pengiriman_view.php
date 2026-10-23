@@ -535,16 +535,24 @@ require_once '../inc/navbar.php';
           </div>
           <div class="card-body" style="padding: 14px;">
             <div class="row">
-              <div class="col-md-3">
-                <div class="form-group mb-0">
+              <div class="col-md-4">
+                <div class="form-group mb-2">
                   <label for="jumlah" style="font-size: 0.84rem; font-weight: 600; margin-bottom: 3px;">
                     Ongkos / Biaya Kirim (Rp) <span class="text-danger">*</span> <small class="text-muted font-weight-normal"><i class="fas fa-lock ml-1"></i> Auto</small>
                   </label>
                   <input type="number" class="form-control form-control-sm font-weight-bold" name="jumlah" id="jumlah" min="0" placeholder="Rp 0" readonly required style="border: 1.5px solid #0d9f4f; color: #076e34; font-size: 0.95rem; background-color: #f4f6f9; cursor: not-allowed;">
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="form-group mb-0">
+              <div class="col-md-4">
+                <div class="form-group mb-2">
+                  <label for="tanggal_pembayaran" style="font-size: 0.84rem; font-weight: 600; margin-bottom: 3px;">
+                    Tanggal Pembayaran <span class="text-danger">*</span>
+                  </label>
+                  <input type="date" class="form-control form-control-sm" name="tanggal_pembayaran" id="tanggal_pembayaran" value="<?= date('Y-m-d') ?>" required style="border: 1px solid #b8b8b8;">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group mb-2">
                   <label for="status_pembayaran_id" style="font-size: 0.84rem; font-weight: 600; margin-bottom: 3px;">
                     Status Pembayaran <span class="text-danger">*</span>
                   </label>
@@ -560,7 +568,9 @@ require_once '../inc/navbar.php';
                   </select>
                 </div>
               </div>
-              <div class="col-md-3">
+            </div>
+            <div class="row mt-1">
+              <div class="col-md-6">
                 <div class="form-group mb-0">
                   <label for="metode_pembayaran_id" style="font-size: 0.84rem; font-weight: 600; margin-bottom: 3px;">
                     Metode Pembayaran <span class="text-danger">*</span>
@@ -577,7 +587,7 @@ require_once '../inc/navbar.php';
                   </select>
                 </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-6">
                 <div class="form-group mb-0">
                   <label for="jenis_rekening_id" style="font-size: 0.84rem; font-weight: 600; margin-bottom: 3px;">
                     Rekening Kasir / Bank <span class="text-danger">*</span>
