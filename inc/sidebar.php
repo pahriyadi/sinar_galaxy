@@ -107,7 +107,7 @@ $app_name_sidebar = function_exists('getSetting') ? getSetting('app_name', 'Sina
 
         <li class="nav-header">DATA MASTER</li>
         <?php if ($role === 'super admin'): ?>
-          <li class="nav-item has-treeview<?= isActive(['data_pelanggan_view', 'data_tujuan_perjalanan_view', 'data_travel_view', 'data_jenis_barang_view', 'data_metode_pembayaran_view', 'data_rekening_view', 'data_status_pembayaran_view', 'data_jenis_pengeluaran_view']) ?>">
+          <li class="nav-item has-treeview<?= isActive(['data_pelanggan_view', 'data_tujuan_perjalanan_view', 'data_jam_keberangkatan_view', 'data_travel_view', 'data_jenis_barang_view', 'data_metode_pembayaran_view', 'data_rekening_view', 'data_status_pembayaran_view', 'data_jenis_pengeluaran_view']) ?>">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-database"></i>
               <p>
@@ -116,7 +116,7 @@ $app_name_sidebar = function_exists('getSetting') ? getSetting('app_name', 'Sina
               </p>
             </a>
             <ul class="nav nav-treeview"
-              style="display: <?= isMenuOpen(['data_pelanggan_view', 'data_tujuan_perjalanan_view', 'data_travel_view', 'data_jenis_barang_view', 'data_metode_pembayaran_view', 'data_rekening_view', 'data_status_pembayaran_view', 'data_jenis_pengeluaran_view']) ?>;">
+              style="display: <?= isMenuOpen(['data_pelanggan_view', 'data_tujuan_perjalanan_view', 'data_jam_keberangkatan_view', 'data_travel_view', 'data_jenis_barang_view', 'data_metode_pembayaran_view', 'data_rekening_view', 'data_status_pembayaran_view', 'data_jenis_pengeluaran_view']) ?>;">
               <li class="nav-item"><a href="<?= $base ?>data_pelanggan/data_pelanggan_view"
                   class="nav-link<?= isActive('data_pelanggan_view') ?>"><i class="far fa-circle nav-icon"></i>
                   <p>Database Pelanggan</p>
@@ -125,6 +125,11 @@ $app_name_sidebar = function_exists('getSetting') ? getSetting('app_name', 'Sina
                   class="nav-link<?= isActive('data_tujuan_perjalanan_view') ?>"><i
                     class="far fa-circle nav-icon"></i>
                   <p>Rute & Tujuan</p>
+                </a></li>
+              <li class="nav-item"><a href="<?= $base ?>data_jam_keberangkatan/data_jam_keberangkatan_view"
+                  class="nav-link<?= isActive('data_jam_keberangkatan_view') ?>"><i
+                    class="far fa-circle nav-icon"></i>
+                  <p>Jadwal Keberangkatan</p>
                 </a></li>
               <li class="nav-item"><a href="<?= $base ?>data_travel/data_travel_view"
                   class="nav-link<?= isActive('data_travel_view') ?>"><i class="far fa-circle nav-icon"></i>

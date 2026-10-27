@@ -52,7 +52,18 @@ $(document).ready(function () {
     $('#no_hp_id').val(hp);
 
     $('#tanggal_pemesanan').val(toDatetimeLocal($btn.data('tglp')));
-    $('#tanggal_berangkat').val(toDatetimeLocal($btn.data('tglb')));
+    if (typeof setDepartureFields === 'function') {
+      setDepartureFields($btn.data('tglb'), $btn.data('jam'));
+    } else {
+      var rawTglb = ($btn.data('tglb') || '').replace(' ', 'T');
+      if (rawTglb) {
+        $('#tanggal_berangkat_date').val(rawTglb.split('T')[0]);
+        var jVal = $btn.data('jam') || (rawTglb.split('T')[1] ? rawTglb.split('T')[1].slice(0, 8) : '');
+        if (jVal && jVal.length === 5) jVal += ':00';
+        $('#jam_keberangkatan').val(jVal);
+        $('#tanggal_berangkat').val(rawTglb.slice(0, 16));
+      }
+    }
 
     // Pastikan nomor plat terdaftar di dropdown
     var $selPlat = $('#no_plat_id');
@@ -97,6 +108,9 @@ $(document).ready(function () {
 
   $('#modalForm').on('hidden.bs.modal', function () {
     $('#formPemesanan')[0].reset();
+    $('#tanggal_berangkat_date').val('');
+    $('#jam_keberangkatan').val('');
+    $('#tanggal_berangkat').val('');
     $('#btnSave').attr('name', 'tambah').text('Simpan');
     $('#modalFormLabel').text('Tambah Pemesanan');
   });

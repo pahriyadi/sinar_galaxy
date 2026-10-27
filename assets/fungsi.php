@@ -99,6 +99,70 @@ function getAllMetodePembayaran() {
     return confirmQuery(mysqli_query($conn, "SELECT * FROM data_metode_pembayaran"));
 }
 
+// Jam Keberangkatan Master Data
+function tambahJamKeberangkatan($data) {
+    assertSuperAdminForWrite();
+    global $conn;
+    $jam = isset($data['jam']) ? mysqli_real_escape_string($conn, trim($data['jam'])) : '';
+    if (strlen($jam) === 5) {
+        $jam .= ':00';
+    }
+    $keterangan = isset($data['keterangan']) ? mysqli_real_escape_string($conn, trim($data['keterangan'])) : '';
+    $is_active = isset($data['is_active']) ? (int)$data['is_active'] : 1;
+    
+    if (empty($jam)) {
+        die('SQL Error: Jam keberangkatan tidak boleh kosong!');
+    }
+    
+    // Cek duplikasi
+    $chk = mysqli_query($conn, "SELECT id FROM ref_jam_keberangkatan WHERE jam = '$jam' LIMIT 1");
+    if ($chk && mysqli_num_rows($chk) > 0) {
+        die('SQL Error: Jam keberangkatan sudah terdaftar!');
+    }
+    
+    $sql = "INSERT INTO ref_jam_keberangkatan (jam, keterangan, is_active) VALUES ('$jam', '$keterangan', $is_active)";
+    return confirmQuery(mysqli_query($conn, $sql));
+}
+
+function updateJamKeberangkatan($data) {
+    assertSuperAdminForWrite();
+    global $conn;
+    $id = isset($data['id']) ? (int)$data['id'] : 0;
+    $jam = isset($data['jam']) ? mysqli_real_escape_string($conn, trim($data['jam'])) : '';
+    if (strlen($jam) === 5) {
+        $jam .= ':00';
+    }
+    $keterangan = isset($data['keterangan']) ? mysqli_real_escape_string($conn, trim($data['keterangan'])) : '';
+    $is_active = isset($data['is_active']) ? (int)$data['is_active'] : 1;
+    
+    if ($id <= 0 || empty($jam)) {
+        die('SQL Error: Data tidak valid!');
+    }
+    
+    // Cek duplikasi jam pada id lain
+    $chk = mysqli_query($conn, "SELECT id FROM ref_jam_keberangkatan WHERE jam = '$jam' AND id != $id LIMIT 1");
+    if ($chk && mysqli_num_rows($chk) > 0) {
+        die('SQL Error: Jam keberangkatan sudah terdaftar pada data lain!');
+    }
+    
+    $sql = "UPDATE ref_jam_keberangkatan SET jam = '$jam', keterangan = '$keterangan', is_active = $is_active WHERE id = $id";
+    return confirmQuery(mysqli_query($conn, $sql));
+}
+
+function deleteJamKeberangkatan($id) {
+    assertSuperAdminForWrite();
+    global $conn;
+    $id = (int)$id;
+    return confirmQuery(mysqli_query($conn, "DELETE FROM ref_jam_keberangkatan WHERE id = $id"));
+}
+
+function getJamKeberangkatanById($id) {
+    global $conn;
+    $id = (int)$id;
+    $res = mysqli_query($conn, "SELECT * FROM ref_jam_keberangkatan WHERE id = $id LIMIT 1");
+    return mysqli_fetch_assoc($res);
+}
+
 // Jenis Pengeluaran
 function tambahJenisPengeluaran($data) {
     assertSuperAdminForWrite();
@@ -522,7 +586,29 @@ function tambahPemesanan($data) {
     if (strlen($tanggal_pembayaran) === 10) {
         $tanggal_pembayaran .= ' ' . date('H:i:s');
     }
-    $tanggal_berangkat = isset($data['tanggal_berangkat']) ? mysqli_real_escape_string($conn, $data['tanggal_berangkat']) : '';
+    
+    // Tangani Jam Keberangkatan & Tanggal Berangkat
+    $jam_keberangkatan = !empty($data['jam_keberangkatan']) ? mysqli_real_escape_string($conn, trim($data['jam_keberangkatan'])) : '';
+    if (strlen($jam_keberangkatan) === 5) {
+        $jam_keberangkatan .= ':00';
+    }
+    $tanggal_berangkat = isset($data['tanggal_berangkat']) ? mysqli_real_escape_string($conn, trim($data['tanggal_berangkat'])) : '';
+    if (!empty($data['tanggal_berangkat_date'])) {
+        $tglDate = mysqli_real_escape_string($conn, trim($data['tanggal_berangkat_date']));
+        $timeStr = !empty($jam_keberangkatan) ? $jam_keberangkatan : '08:00:00';
+        $tanggal_berangkat = $tglDate . ' ' . $timeStr;
+    } else if (strpos($tanggal_berangkat, 'T') !== false) {
+        $tanggal_berangkat = str_replace('T', ' ', $tanggal_berangkat);
+        if (strlen($tanggal_berangkat) === 16) {
+            $tanggal_berangkat .= ':00';
+        }
+    }
+    if (empty($jam_keberangkatan) && !empty($tanggal_berangkat)) {
+        $tParts = explode(' ', $tanggal_berangkat);
+        if (isset($tParts[1])) {
+            $jam_keberangkatan = substr($tParts[1], 0, 8);
+        }
+    }
     $no_plat_id = isset($data['no_plat_id']) ? mysqli_real_escape_string($conn, $data['no_plat_id']) : '';
     $kelas_id = isset($data['kelas_id']) ? mysqli_real_escape_string($conn, $data['kelas_id']) : '';
     $harga_id = isset($data['harga_id']) ? mysqli_real_escape_string($conn, $data['harga_id']) : '';
@@ -616,10 +702,11 @@ function tambahPemesanan($data) {
         }
     }
 
+    $jam_escaped = !empty($jam_keberangkatan) ? "'$jam_keberangkatan'" : "NULL";
     $sql = "INSERT INTO data_pemesanan (
-        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, no_plat_id, kelas_id, harga_id, kursi, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, username, asal_po, keterangan
+        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, jam_keberangkatan, no_plat_id, kelas_id, harga_id, kursi, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, username, asal_po, keterangan
     ) VALUES (
-        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pemesanan', '$tanggal_pembayaran', '$tanggal_berangkat', '$no_plat_id', '$kelas_id', '$harga_id', $kursi, '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', '$username', '$asal_po', '$keterangan'
+        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pemesanan', '$tanggal_pembayaran', '$tanggal_berangkat', $jam_escaped, '$no_plat_id', '$kelas_id', '$harga_id', $kursi, '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', '$username', '$asal_po', '$keterangan'
     )";
     $result = confirmQuery(mysqli_query($conn, $sql));
     if ($result) {
@@ -632,6 +719,7 @@ function tambahPemesanan($data) {
             'metode_pembayaran_id'=>$metode_pembayaran_id,'jenis_rekening_id'=>$jenis_rekening_id,'username'=>$username,'asal_po'=>$asal_po
         ]);
         logCreate('data_pemesanan', $new_id, 'Tambah pemesanan', $new_data);
+        return $new_id;
     }
     return $result;
 }
@@ -663,7 +751,29 @@ function updatePemesanan($data) {
     if (strlen($tanggal_pembayaran) === 10) {
         $tanggal_pembayaran .= ' ' . date('H:i:s');
     }
-    $tanggal_berangkat = isset($data['tanggal_berangkat']) ? mysqli_real_escape_string($conn, $data['tanggal_berangkat']) : '';
+    
+    // Tangani Jam Keberangkatan & Tanggal Berangkat
+    $jam_keberangkatan = !empty($data['jam_keberangkatan']) ? mysqli_real_escape_string($conn, trim($data['jam_keberangkatan'])) : '';
+    if (strlen($jam_keberangkatan) === 5) {
+        $jam_keberangkatan .= ':00';
+    }
+    $tanggal_berangkat = isset($data['tanggal_berangkat']) ? mysqli_real_escape_string($conn, trim($data['tanggal_berangkat'])) : '';
+    if (!empty($data['tanggal_berangkat_date'])) {
+        $tglDate = mysqli_real_escape_string($conn, trim($data['tanggal_berangkat_date']));
+        $timeStr = !empty($jam_keberangkatan) ? $jam_keberangkatan : '08:00:00';
+        $tanggal_berangkat = $tglDate . ' ' . $timeStr;
+    } else if (strpos($tanggal_berangkat, 'T') !== false) {
+        $tanggal_berangkat = str_replace('T', ' ', $tanggal_berangkat);
+        if (strlen($tanggal_berangkat) === 16) {
+            $tanggal_berangkat .= ':00';
+        }
+    }
+    if (empty($jam_keberangkatan) && !empty($tanggal_berangkat)) {
+        $tParts = explode(' ', $tanggal_berangkat);
+        if (isset($tParts[1])) {
+            $jam_keberangkatan = substr($tParts[1], 0, 8);
+        }
+    }
     $no_plat_id = isset($data['no_plat_id']) ? mysqli_real_escape_string($conn, $data['no_plat_id']) : '';
     $kelas_id = isset($data['kelas_id']) ? mysqli_real_escape_string($conn, $data['kelas_id']) : '';
     $harga_id = isset($data['harga_id']) ? mysqli_real_escape_string($conn, $data['harga_id']) : '';
@@ -758,8 +868,9 @@ function updatePemesanan($data) {
         }
     }
 
+    $jam_escaped = !empty($jam_keberangkatan) ? "'$jam_keberangkatan'" : "NULL";
     $sql = "UPDATE data_pemesanan SET 
-        nip_sgt_id='$nip_sgt_id', nama_id='$nama_id', alamat_id='$alamat_id', no_ktp_id='$no_ktp_id', no_hp_id='$no_hp_id', tanggal_pemesanan='$tanggal_pemesanan', tanggal_pembayaran='$tanggal_pembayaran', tanggal_berangkat='$tanggal_berangkat', no_plat_id='$no_plat_id', kelas_id='$kelas_id', harga_id='$harga_id', kursi=$kursi, tujuan_id='$tujuan_id', status_pembayaran_id='$status_pembayaran_id', metode_pembayaran_id='$metode_pembayaran_id', jenis_rekening_id='$jenis_rekening_id', payment_methods='$payment_methods_json', payment_details='$payment_details', username='$username', asal_po='$asal_po', keterangan='$keterangan'
+        nip_sgt_id='$nip_sgt_id', nama_id='$nama_id', alamat_id='$alamat_id', no_ktp_id='$no_ktp_id', no_hp_id='$no_hp_id', tanggal_pemesanan='$tanggal_pemesanan', tanggal_pembayaran='$tanggal_pembayaran', tanggal_berangkat='$tanggal_berangkat', jam_keberangkatan=$jam_escaped, no_plat_id='$no_plat_id', kelas_id='$kelas_id', harga_id='$harga_id', kursi=$kursi, tujuan_id='$tujuan_id', status_pembayaran_id='$status_pembayaran_id', metode_pembayaran_id='$metode_pembayaran_id', jenis_rekening_id='$jenis_rekening_id', payment_methods='$payment_methods_json', payment_details='$payment_details', username='$username', asal_po='$asal_po', keterangan='$keterangan'
         WHERE id_pemesanan=$id";
     // old data sebelum update
     if (!function_exists('getOldData')) { require_once __DIR__ . '/logging_helper.php'; }

@@ -13,6 +13,20 @@ if (isset($_GET['id_pemesanan'])) {
     exit;
 }
 
+if (isset($_GET['get_jam'])) {
+    require_once '../inc/koneksi.php';
+    $resJam = mysqli_query($conn, "SELECT id, jam FROM ref_jam_keberangkatan ORDER BY jam ASC");
+    $jams = [];
+    if ($resJam) {
+        while ($rJ = mysqli_fetch_assoc($resJam)) {
+            $jams[] = $rJ;
+        }
+    }
+    header('Content-Type: application/json');
+    echo json_encode($jams);
+    exit;
+}
+
 require_once '../assets/session.php';
 require_once '../inc/koneksi.php';
 
@@ -59,8 +73,8 @@ $draw = intval($_GET['draw'] ?? 1);
 // Base query with prepared statements
 $id_users_escaped = mysqli_real_escape_string($conn, $id_users);
 if ($role === 'super admin') {
-    $baseQuery = "SELECT pm.* FROM data_pemesanan pm";
-    $countQuery = "SELECT COUNT(*) FROM data_pemesanan pm";
+    $baseQuery = "SELECT pm.* FROM data_pemesanan pm WHERE 1=1";
+    $countQuery = "SELECT COUNT(*) FROM data_pemesanan pm WHERE 1=1";
 } else {
     $baseQuery = "SELECT pm.* FROM data_pemesanan pm WHERE pm.username = '$id_users_escaped' AND pm.asal_po = '$id_users_escaped'";
     $countQuery = "SELECT COUNT(*) FROM data_pemesanan pm WHERE pm.username = '$id_users_escaped' AND pm.asal_po = '$id_users_escaped'";
@@ -168,7 +182,7 @@ if ($result) {
         $isDp = ($lunasId === null) ? true : ($row['status_pembayaran_id'] != $lunasId);
         $actionButtons = '
           <div class="btn-group" role="group">
-            <button class="btn btn-warning btn-sm btn-edit" data-id="' . $row['id_pemesanan'] . '" data-nip="' . htmlspecialchars($row['nip_sgt_id']) . '" data-nama="' . htmlspecialchars($row['nama_id']) . '" data-alamat="' . htmlspecialchars($row['alamat_id']) . '" data-ktp="' . htmlspecialchars($row['no_ktp_id']) . '" data-hp="' . htmlspecialchars($row['no_hp_id']) . '" data-tglp="' . htmlspecialchars($row['tanggal_pemesanan']) . '" data-tglbayar="' . htmlspecialchars($row['tanggal_pembayaran'] ?? '') . '" data-tglb="' . htmlspecialchars($row['tanggal_berangkat']) . '" data-plat="' . htmlspecialchars($row['no_plat_id']) . '" data-kelas="' . htmlspecialchars($row['kelas_id']) . '" data-harga="' . htmlspecialchars($row['harga_id']) . '" data-kursi="' . htmlspecialchars($row['kursi']) . '" data-tujuan="' . htmlspecialchars($row['tujuan_id']) . '" data-status="' . htmlspecialchars($row['status_pembayaran_id']) . '" data-metode="' . htmlspecialchars($row['metode_pembayaran_id']) . '" data-rekening="' . htmlspecialchars($row['jenis_rekening_id']) . '" data-keterangan="' . htmlspecialchars($row['keterangan']) . '" data-payment_type="' . ($row['payment_type'] ?? 'single') . '" data-payment_methods="' . htmlspecialchars($row['payment_methods'] ?? '') . '">
+            <button class="btn btn-warning btn-sm btn-edit" data-id="' . $row['id_pemesanan'] . '" data-nip="' . htmlspecialchars($row['nip_sgt_id']) . '" data-nama="' . htmlspecialchars($row['nama_id']) . '" data-alamat="' . htmlspecialchars($row['alamat_id']) . '" data-ktp="' . htmlspecialchars($row['no_ktp_id']) . '" data-hp="' . htmlspecialchars($row['no_hp_id']) . '" data-tglp="' . htmlspecialchars($row['tanggal_pemesanan']) . '" data-tglbayar="' . htmlspecialchars($row['tanggal_pembayaran'] ?? '') . '" data-tglb="' . htmlspecialchars($row['tanggal_berangkat']) . '" data-jam="' . htmlspecialchars($row['jam_keberangkatan'] ?? '') . '" data-armada="' . htmlspecialchars($row['armada_id'] ?? '') . '" data-plat="' . htmlspecialchars($row['no_plat_id']) . '" data-kelas="' . htmlspecialchars($row['kelas_id']) . '" data-harga="' . htmlspecialchars($row['harga_id']) . '" data-kursi="' . htmlspecialchars($row['kursi']) . '" data-tujuan="' . htmlspecialchars($row['tujuan_id']) . '" data-status="' . htmlspecialchars($row['status_pembayaran_id']) . '" data-metode="' . htmlspecialchars($row['metode_pembayaran_id']) . '" data-rekening="' . htmlspecialchars($row['jenis_rekening_id']) . '" data-keterangan="' . htmlspecialchars($row['keterangan']) . '" data-payment_type="' . ($row['payment_type'] ?? 'single') . '" data-payment_methods="' . htmlspecialchars($row['payment_methods'] ?? '') . '">
               <i class="fas fa-edit"></i>
             </button>';
         

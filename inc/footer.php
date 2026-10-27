@@ -390,6 +390,7 @@ $(document).ready(function() {
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_rekening/data_rekening.js', $base) : $base . 'data_rekening/data_rekening.js?v=3.3.0' ?>"></script>
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_travel/data_travel.js', $base) : $base . 'data_travel/data_travel.js?v=3.3.0' ?>"></script>
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_tujuan_perjalanan/data_tujuan_perjalanan.js', $base) : $base . 'data_tujuan_perjalanan/data_tujuan_perjalanan.js?v=3.3.0' ?>"></script>
+<script src="<?= function_exists('asset_ver') ? asset_ver('data_jam_keberangkatan/data_jam_keberangkatan.js', $base) : $base . 'data_jam_keberangkatan/data_jam_keberangkatan.js?v=3.3.0' ?>"></script>
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_users/data_users.js', $base) : $base . 'data_users/data_users.js?v=3.3.0' ?>"></script>
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_pelanggan/data_pelanggan.js', $base) : $base . 'data_pelanggan/data_pelanggan.js?v=3.3.0' ?>"></script>
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_pemesanan/data_pemesanan.js', $base) : $base . 'data_pemesanan/data_pemesanan.js?v=3.3.0' ?>"></script>

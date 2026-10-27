@@ -3,22 +3,32 @@
  * test_crud.php
  * -------------------------------------------------
  * Skrip ini menguji operasi CRUD pada tabel data_pemesanan
- * serta memverifikasi keberadaan atribut data‑payment_type
- * dan data‑payment_methods pada tombol Edit (fetch UI).
+ * serta memverifikasi keberadaan atribut data-payment_type
+ * dan data-payment_methods pada tombol Edit (fetch UI).
  *
  * Jalankan:
- *   php C:\xampp\htdocs\sinargalaxy.my.id\scratch\test_crud.php
+ *   C:\xampp\php\php.exe C:\xampp\htdocs\sinargalaxy.my.id\scratch\test_crud.php
  */
 
-require __DIR__ . '/../inc/koneksi.php';   // koneksi MySQLi $conn
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$_SESSION['user'] = [
+    'id_users' => 1,
+    'username' => 'admin_test',
+    'role' => 'super admin',
+    'asal_po' => 1
+];
+
+require __DIR__ . '/../inc/koneksi.php';
 
 // -----------------------------------------------------------------
-// 1. CREATE – sisipkan data contoh
+// 1. CREATE - sisipkan data contoh (multiple)
 // -----------------------------------------------------------------
 $now = date('Y-m-d H:i:s');
 $paymentMethods = json_encode([
-    ['metode' => 'Transfer', 'tanggal' => '2026-10-22', 'jumlah' => 50000],
-    ['metode' => 'Cash',     'tanggal' => '2026-10-23', 'jumlah' => 25000]
+    ['method_id' => 1, 'payment_date' => '2026-10-22', 'amount' => 50000, 'rekening_id' => 1],
+    ['method_id' => 2, 'payment_date' => '2026-10-23', 'amount' => 50000, 'rekening_id' => 1]
 ]);
 
 $insertSql = "
@@ -29,9 +39,9 @@ INSERT INTO data_pemesanan
    status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id,
    keterangan, payment_type, payment_methods)
 VALUES
-  ('12345678', 'Test Nama', 'Jalan Test 1', '987654321', '08123456789',
+  ('CRUD_TEST_99', 'Test Nama', 'Jalan Test 1', '987654321', '08123456789',
    '$now', '$now', 'B 1234 CD',
-   'Ekonomi', 100000, 'A1', 'Jakarta',
+   'Ekonomi', 100000, 1, 1,
    1, 2, 1,
    'Uji coba', 'multiple', '$paymentMethods')
 ";
@@ -58,15 +68,57 @@ if ($row['payment_type'] !== 'multiple') {
 if (json_decode($row['payment_methods'], true) !== json_decode($paymentMethods, true)) {
     exit("❌ READ gagal – payment_methods tidak sesuai" . PHP_EOL);
 }
-echo "✅ READ berhasil – data ter‑verifikasi" . PHP_EOL;
+echo "✅ READ berhasil – data ter-verifikasi" . PHP_EOL;
 
 // -----------------------------------------------------------------
-// 3. UPDATE – ubah beberapa nilai
+// 3. FETCH UI (saat masih multiple) – periksa tombol Edit
+// -----------------------------------------------------------------
+$_GET = [
+    'start' => 0,
+    'length' => 10,
+    'search' => ['value' => 'CRUD_TEST_99']
+];
+
+$origDir = getcwd();
+chdir(__DIR__ . '/../data_pemesanan');
+ob_start();
+include __DIR__ . '/../data_pemesanan/data_pemesanan_fetch.php';
+$fetchJson = ob_get_clean();
+chdir($origDir);
+
+if (preg_match('/\{[\s\S]*\}/', $fetchJson, $m)) {
+    $fetchResult = json_decode($m[0], true);
+} else {
+    $fetchResult = null;
+}
+
+if (!isset($fetchResult['data']) || count($fetchResult['data']) === 0) {
+    exit("❌ FETCH UI gagal – baris data tidak ditemukan untuk ID $insertId" . PHP_EOL);
+}
+
+$buttonHtml = '';
+foreach ($fetchResult['data'][0] as $colVal) {
+    if (strpos($colVal, 'btn-edit') !== false) {
+        $buttonHtml = $colVal;
+        break;
+    }
+}
+
+if (strpos($buttonHtml, 'data-payment_type="multiple"') === false) {
+    exit("❌ FETCH UI gagal – data-payment_type tidak ada atau tidak bernilai 'multiple'" . PHP_EOL);
+}
+if (strpos($buttonHtml, 'data-payment_methods=') === false) {
+    exit("❌ FETCH UI gagal – data-payment_methods tidak ada" . PHP_EOL);
+}
+echo "✅ FETCH UI berhasil – tombol Edit meng-output atribut payment_type & payment_methods" . PHP_EOL;
+
+// -----------------------------------------------------------------
+// 4. UPDATE – ubah ke single
 // -----------------------------------------------------------------
 $updateSql = "
 UPDATE data_pemesanan
 SET
-    nama_id = 'Nama Di‑update',
+    nama_id = 'Nama Di-update',
     payment_type = 'single',
     payment_methods = NULL
 WHERE id_pemesanan = $insertId
@@ -85,29 +137,6 @@ if ($row['payment_type'] !== 'single' || $row['payment_methods'] !== null) {
 echo "✅ UPDATE verifikasi berhasil" . PHP_EOL;
 
 // -----------------------------------------------------------------
-// 4. FETCH UI – periksa tombol Edit pada data_pemesanan_fetch.php
-// -----------------------------------------------------------------
-ob_start();
-include __DIR__ . '/../data_pemesanan/data_pemesanan_fetch.php';   // file ini echo HTML
-$fetchOutput = ob_get_clean();
-
-// Cari baris tombol Edit yang mengandung ID yang baru dibuat
-$pattern = '/data-id="\s*' . $insertId . '\s*".*?class="btn btn-warning btn-sm btn-edit".*?>/s';
-if (!preg_match($pattern, $fetchOutput, $matches)) {
-    exit("❌ FETCH UI gagal – tombol Edit tidak ditemukan untuk ID $insertId" . PHP_EOL);
-}
-$buttonHtml = $matches[0];
-
-// Pastikan atribut payment_type & payment_methods ada
-if (strpos($buttonHtml, 'data-payment_type="multiple"') === false) {
-    exit("❌ FETCH UI gagal – data-payment_type tidak ada atau tidak bernilai 'multiple'" . PHP_EOL);
-}
-if (strpos($buttonHtml, 'data-payment_methods=') === false) {
-    exit("❌ FETCH UI gagal – data-payment_methods tidak ada" . PHP_EOL);
-}
-echo "✅ FETCH UI berhasil – tombol Edit meng‑output atribut payment_type & payment_methods" . PHP_EOL;
-
-// -----------------------------------------------------------------
 // 5. DELETE – bersihkan data uji
 // -----------------------------------------------------------------
 $deleteSql = "DELETE FROM data_pemesanan WHERE id_pemesanan = $insertId";
@@ -117,3 +146,4 @@ if (!mysqli_query($conn, $deleteSql)) {
 echo "✅ DELETE berhasil – baris uji dihapus" . PHP_EOL;
 
 echo PHP_EOL . "🟢 Semua tes CRUD selesai tanpa error." . PHP_EOL;
+?>

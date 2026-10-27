@@ -573,8 +573,34 @@ if ($result) {
                   </div>
                   <div class="col-md-3">
                     <div class="form-group mb-2">
-                      <label class="text-xs font-weight-bold text-muted mb-1" for="tanggal_berangkat">Tgl Keberangkatan <span class="text-danger">*</span></label>
-                      <input type="datetime-local" class="form-control form-control-sm" name="tanggal_berangkat" id="tanggal_berangkat" required>
+                      <label class="text-xs font-weight-bold text-muted mb-1" for="tanggal_berangkat_date">Tgl Keberangkatan <span class="text-danger">*</span></label>
+                      <input type="date" class="form-control form-control-sm" name="tanggal_berangkat_date" id="tanggal_berangkat_date" required>
+                      <input type="hidden" name="tanggal_berangkat" id="tanggal_berangkat" required>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="form-group mb-2">
+                      <label class="text-xs font-weight-bold text-muted mb-1" for="jam_keberangkatan">
+                        <i class="far fa-clock text-primary mr-1"></i>Jam Berangkat <span class="text-danger">*</span>
+                      </label>
+                      <select class="form-control form-control-sm font-weight-bold text-primary" name="jam_keberangkatan" id="jam_keberangkatan" required style="font-size: 13px;">
+                        <option value="">-- Pilih Jam --</option>
+                        <?php
+                        $resJam = mysqli_query($conn, "SELECT id, jam, keterangan FROM ref_jam_keberangkatan WHERE is_active = 1 ORDER BY jam ASC");
+                        if ($resJam && mysqli_num_rows($resJam) > 0) {
+                          while ($rJ = mysqli_fetch_assoc($resJam)) {
+                            $fmtJam = substr($rJ['jam'], 0, 5);
+                            $labelKet = !empty($rJ['keterangan']) ? ' - ' . htmlspecialchars($rJ['keterangan']) : '';
+                            echo '<option value="' . htmlspecialchars($rJ['jam']) . '">' . htmlspecialchars($fmtJam) . ' WITA' . $labelKet . '</option>';
+                          }
+                        } else {
+                          $fallbackJam = ['07:00:00','08:00:00','10:00:00','14:00:00','17:00:00','20:00:00'];
+                          foreach ($fallbackJam as $fj) {
+                            echo '<option value="' . $fj . '">' . substr($fj, 0, 5) . ' WITA</option>';
+                          }
+                        }
+                        ?>
+                      </select>
                     </div>
                   </div>
                   <div class="col-md-3">
@@ -593,12 +619,12 @@ if ($result) {
                     </div>
                   </div>
                   <div class="col-md-3">
-                    <div class="form-group mb-2">
+                    <div class="form-group mb-1">
                       <label class="text-xs font-weight-bold text-muted mb-1" for="kelas_id">Kelas Layanan</label>
                       <input type="text" class="form-control form-control-sm bg-light" name="kelas_id" id="kelas_id" placeholder="Otomatis plat" readonly required>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="form-group mb-1">
                       <label class="text-xs font-weight-bold text-muted mb-1" for="tujuan_id">Tujuan Perjalanan <span class="text-danger">*</span></label>
                       <select class="form-control form-control-sm" name="tujuan_id" id="tujuan_id" required style="font-size: 13px;">
@@ -613,7 +639,7 @@ if ($result) {
                       </select>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="form-group mb-1">
                       <div class="d-flex justify-content-between align-items-center mb-1">
                         <label class="text-xs font-weight-bold text-muted mb-0" for="kursi">
@@ -633,7 +659,7 @@ if ($result) {
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="form-group mb-1">
                       <label class="text-xs font-weight-bold text-muted mb-1" for="harga_id">Tarif / Harga Tiket (Rp) <span class="text-danger">*</span></label>
                       <input type="number" class="form-control form-control-sm font-weight-bold" name="harga_id" id="harga_id" min="0" placeholder="Rp 0" required>
@@ -1274,6 +1300,52 @@ if ($result) {
 
 
     <script>
+      function syncTanggalBerangkat() {
+        var d = $('#tanggal_berangkat_date').val();
+        var j = $('#jam_keberangkatan').val();
+        if (d && j) {
+          var timeFmt = j.length === 5 ? j : j.slice(0, 5);
+          $('#tanggal_berangkat').val(d + 'T' + timeFmt);
+        } else if (d) {
+          $('#tanggal_berangkat').val(d + 'T00:00');
+        } else {
+          $('#tanggal_berangkat').val('');
+        }
+      }
+
+      function setDepartureFields(val, jamVal) {
+        if (!val) {
+          $('#tanggal_berangkat_date').val('');
+          $('#jam_keberangkatan').val(jamVal || '');
+          $('#tanggal_berangkat').val('');
+          return;
+        }
+        var clean = String(val).replace(' ', 'T');
+        var datePart = clean.split('T')[0];
+        var timePart = clean.split('T')[1] ? clean.split('T')[1].slice(0, 8) : '';
+        $('#tanggal_berangkat_date').val(datePart);
+
+        var targetJam = jamVal || timePart;
+        if (targetJam) {
+          if (targetJam.length === 5) targetJam += ':00';
+          var matched = false;
+          $('#jam_keberangkatan option').each(function() {
+            if ($(this).val().startsWith(targetJam.slice(0, 5))) {
+              $('#jam_keberangkatan').val($(this).val());
+              matched = true;
+              return false;
+            }
+          });
+          if (!matched) {
+            $('#jam_keberangkatan').append(new Option(targetJam.slice(0, 5) + ' WITA', targetJam, true, true));
+            $('#jam_keberangkatan').val(targetJam);
+          }
+        }
+        syncTanggalBerangkat();
+      }
+
+      $(document).on('change input', '#tanggal_berangkat_date, #jam_keberangkatan', syncTanggalBerangkat);
+
       function autofillPelanggan() {
         var nipSgt = document.getElementById('nip_sgt_id').value;
         if (nipSgt) {
@@ -1344,6 +1416,7 @@ if ($result) {
             const resp = await $.getJSON('data_pemesanan_fetch.php', { id_pemesanan: id });
             if (resp) {
               if (resp.payment_methods) data.paymentMethods = resp.payment_methods;
+              if (resp.jam_keberangkatan && !data.jam) data.jam = resp.jam_keberangkatan;
               if (resp.nip_sgt_id && !nipVal) nipVal = resp.nip_sgt_id;
               if (resp.nama_id && !namaVal) namaVal = resp.nama_id;
               if (resp.alamat_id && !alamatVal) alamatVal = resp.alamat_id;
@@ -1397,13 +1470,8 @@ if ($result) {
         } else {
           $('#tanggal_pembayaran').val(new Date().toISOString().split('T')[0]);
         }
-        // Format tanggal_berangkat (datetime-local)
-        if (data.tglb) {
-          var tglb = data.tglb.replace(' ', 'T').slice(0, 16);
-          $('#tanggal_berangkat').val(tglb);
-        } else {
-          $('#tanggal_berangkat').val('');
-        }
+        // Format tanggal_berangkat & jam_keberangkatan
+        setDepartureFields(data.tglb, data.jam);
 
         // 3. Pastikan no plat terdaftar di dropdown
         var $selPlat = $('#no_plat_id');
@@ -1459,6 +1527,9 @@ if ($result) {
       // Reset form when modal is closed
       $('#modalForm').on('hidden.bs.modal', function () {
         $('#formPemesanan')[0].reset();
+        $('#tanggal_berangkat_date').val('');
+        $('#jam_keberangkatan').val('');
+        $('#tanggal_berangkat').val('');
         $('#tanggal_pembayaran').val(new Date().toISOString().split('T')[0]);
         $('#wrapper_tanggal_pembayaran').show();
         $('#singlePaymentMethod').hide();
@@ -2436,12 +2507,16 @@ if ($result) {
 
       // Buka Modal Seat Picker
       $('#btnOpenSeatPicker, #btnOpenSeatPickerAddon').on('click', function() {
+        syncTanggalBerangkat();
+        let tglDate = $('#tanggal_berangkat_date').val();
+        let jamVal = $('#jam_keberangkatan').val();
         let tglBerangkat = $('#tanggal_berangkat').val();
         let noPlat = $('#no_plat_id').val();
 
-        if (!tglBerangkat) {
+        if (!tglDate || !jamVal || !tglBerangkat) {
           alert('Silakan tentukan Tanggal & Jam Keberangkatan terlebih dahulu!');
-          $('#tanggal_berangkat').focus();
+          if (!tglDate) $('#tanggal_berangkat_date').focus();
+          else $('#jam_keberangkatan').focus();
           return;
         }
 
@@ -2603,7 +2678,9 @@ if ($result) {
       if (urlParams.get('action') === 'new') {
         $('#modalForm').modal('show');
         if (urlParams.get('kursi')) $('#kursi').val(urlParams.get('kursi'));
-        if (urlParams.get('tanggal_berangkat')) $('#tanggal_berangkat').val(urlParams.get('tanggal_berangkat'));
+        if (urlParams.get('tanggal_berangkat')) {
+          setDepartureFields(urlParams.get('tanggal_berangkat'));
+        }
         if (urlParams.get('no_plat')) {
           $('#no_plat_id').val(urlParams.get('no_plat'));
           if (typeof autofillTravel === 'function') autofillTravel();
