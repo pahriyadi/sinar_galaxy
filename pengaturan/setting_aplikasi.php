@@ -23,20 +23,21 @@ $pesan_tipe = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_pengaturan'])) {
     $app_name = trim($_POST['app_name'] ?? '');
     $app_tagline = trim($_POST['app_tagline'] ?? '');
+    $save_ok = true;
     
     if (!empty($app_name)) {
-        updateSetting('app_name', $app_name, $id_users);
+        if (!updateSetting('app_name', $app_name, $id_users)) $save_ok = false;
     }
     if (!empty($app_tagline)) {
-        updateSetting('app_tagline', $app_tagline, $id_users);
+        if (!updateSetting('app_tagline', $app_tagline, $id_users)) $save_ok = false;
     }
 
     // Reset to default flags
     if (isset($_POST['reset_logo']) && $_POST['reset_logo'] == '1') {
-        updateSetting('app_logo', 'img/logo_sgt.png', $id_users);
+        if (!updateSetting('app_logo', 'img/logo_sgt.png', $id_users)) $save_ok = false;
     }
     if (isset($_POST['reset_favicon']) && $_POST['reset_favicon'] == '1') {
-        updateSetting('app_favicon', 'img/logo_sgt.png', $id_users);
+        if (!updateSetting('app_favicon', 'img/logo_sgt.png', $id_users)) $save_ok = false;
     }
 
     // Direktori upload
@@ -57,9 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_pengaturan']))
                 $target_path = $upload_dir . $new_filename;
                 
                 if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                    updateSetting('app_logo', 'img/' . $new_filename, $id_users);
+                    if (!updateSetting('app_logo', 'img/' . $new_filename, $id_users)) $save_ok = false;
                 } else {
-                    $pesan = 'Gagal memindahkan file logo ke direktori penyimpanan.';
+                    $pesan = 'Gagal memindahkan file logo ke direktori penyimpanan. Periksa permission folder img/.';
                     $pesan_tipe = 'danger';
                 }
             } else {
@@ -84,9 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_pengaturan']))
                 $target_path = $upload_dir . $new_filename;
                 
                 if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                    updateSetting('app_favicon', 'img/' . $new_filename, $id_users);
+                    if (!updateSetting('app_favicon', 'img/' . $new_filename, $id_users)) $save_ok = false;
                 } else {
-                    $pesan = 'Gagal memindahkan file favicon ke direktori penyimpanan.';
+                    $pesan = 'Gagal memindahkan file favicon ke direktori penyimpanan. Periksa permission folder img/.';
                     $pesan_tipe = 'danger';
                 }
             } else {
@@ -99,16 +100,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_pengaturan']))
         }
     }
 
-    if (empty($pesan)) {
+    if (!$save_ok) {
+        $pesan = 'Gagal menyimpan perubahan ke database (tabel system_settings). Pastikan database MySQL aktif dan izin akses terpenuhi.';
+        $pesan_tipe = 'danger';
+    } elseif (empty($pesan)) {
         $pesan = 'Pengaturan identitas website, logo, dan favicon berhasil diperbarui!';
         $pesan_tipe = 'success';
     }
 }
 
 // Ambil nilai setting terkini
-$current_logo = getSetting('app_logo', 'img/logo_sgt.png');
-$current_favicon = getSetting('app_favicon', 'img/logo_sgt.png');
-$current_app_name = getSetting('app_name', 'Sinar Galaxy');
+$current_logo = getSetting('app_logo', 'img/logo_custom_1791347038.png');
+$current_favicon = getSetting('app_favicon', 'img/favicon_custom_1791347038.png');
+$current_app_name = getSetting('app_name', 'Sinar Galaxy Travel');
 $current_tagline = getSetting('app_tagline', 'Travel Eksekutif Sumbawa - Mataram');
 
 // Base prefix untuk include
