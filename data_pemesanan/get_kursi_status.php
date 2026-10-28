@@ -30,8 +30,10 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
 }
 
 // Ambil data armada dari master data_travel
+$is_pending_plat = (empty($no_plat) || $no_plat === 'BELUM DITENTUKAN' || $no_plat === '-');
 $armada = null;
-if (!empty($no_plat)) {
+
+if (!$is_pending_plat) {
     $stmt = $conn->prepare("SELECT id_travel, no_plat, kelas, harga, jumlah_kursi FROM data_travel WHERE no_plat = ? LIMIT 1");
     $stmt->bind_param('s', $no_plat);
     $stmt->execute();
@@ -41,9 +43,14 @@ if (!empty($no_plat)) {
 }
 
 if (!$armada) {
-    // Ambil armada default jika tidak dipilih
+    // Ambil armada default jika tidak dipilih atau pending
     $resDef = mysqli_query($conn, "SELECT id_travel, no_plat, kelas, harga, jumlah_kursi FROM data_travel ORDER BY id_travel ASC LIMIT 1");
     $armada = mysqli_fetch_assoc($resDef);
+    if ($is_pending_plat && $armada) {
+        $armada['no_plat'] = 'BELUM DITENTUKAN';
+        $armada['kelas'] = 'EKONOMI';
+        $armada['jumlah_kursi'] = 11;
+    }
 }
 
 if (!$armada) {
@@ -70,6 +77,10 @@ $slot_start = date('Y-m-d H:i:s', strtotime("$datetime_slot -45 minutes"));
 $slot_end = date('Y-m-d H:i:s', strtotime("$datetime_slot +45 minutes"));
 
 // Query pemesanan tiket pada slot ini
+$wherePlatClause = $is_pending_plat 
+    ? "(pm.no_plat_id IS NULL OR pm.no_plat_id = '' OR pm.no_plat_id = 'BELUM DITENTUKAN' OR pm.no_plat_id = '-')"
+    : "pm.no_plat_id = ?";
+
 $sql = "SELECT 
             pm.id_pemesanan,
             pm.nama_id,
@@ -86,7 +97,7 @@ $sql = "SELECT
         LEFT JOIN data_status_pembayaran sp ON pm.status_pembayaran_id = sp.id_status_pembayaran
         LEFT JOIN data_tujuan_perjalanan tj ON pm.tujuan_id = tj.id_tujuan_perjalanan
         LEFT JOIN data_users u ON pm.username = u.id_users
-        WHERE pm.no_plat_id = ?
+        WHERE $wherePlatClause
           AND pm.tanggal_berangkat >= ?
           AND pm.tanggal_berangkat <= ?";
 
@@ -95,7 +106,11 @@ if ($exclude_id > 0) {
 }
 
 $stmtP = $conn->prepare($sql);
-$stmtP->bind_param('sss', $no_plat_aktif, $slot_start, $slot_end);
+if ($is_pending_plat) {
+    $stmtP->bind_param('ss', $slot_start, $slot_end);
+} else {
+    $stmtP->bind_param('sss', $no_plat_aktif, $slot_start, $slot_end);
+}
 $stmtP->execute();
 $resP = $stmtP->get_result();
 

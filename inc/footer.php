@@ -23,7 +23,7 @@ $footer_name = function_exists('getSetting') ? getSetting('app_name', 'Sinar Gal
       <!-- Right: System Version & Live Status -->
       <div class="footer-right d-flex align-items-center my-1">
         <span class="badge-status-pill mr-2">
-          <i class="fas fa-shield-alt text-primary mr-1"></i> SIM-SGT <strong class="ml-1">v3.2.0</strong>
+          <i class="fas fa-shield-alt text-primary mr-1"></i> SIM-SGT <strong class="ml-1">v3.3.0</strong>
         </span>
         <span class="badge-status-pill badge-status-online" title="Sistem Aktif & Terhubung">
           <span class="pulse-indicator mr-1"></span> Online
@@ -399,5 +399,8 @@ $(document).ready(function() {
 <script src="<?= function_exists('asset_ver') ? asset_ver('data_saldo_awal/data_saldo_awal.js', $base) : $base . 'data_saldo_awal/data_saldo_awal.js?v=3.3.0' ?>"></script>
 <!-- Universal Page Preloader Script -->
 <script src="<?= function_exists('asset_ver') ? asset_ver('assets/js/preloader.js', $base) : $base . 'assets/js/preloader.js?v=3.3.0' ?>"></script>
+
+<!-- Modal Fitur Baru (Release Notes Auto & On-Demand) -->
+<?php include __DIR__ . '/modal_whats_new.php'; ?>
 </body>
 </html>

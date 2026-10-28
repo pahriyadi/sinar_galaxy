@@ -926,6 +926,169 @@ div.info-mini-card.bg-modern-dark {
     display: inline-block;
 }
 
+/* ==========================================================================
+   UNIVERSAL REPORT & PAGE HEADER TOOLBAR (Paper White v2.0)
+   Menjaga tata letak tombol aksi judul halaman selalu rapi, presisi & konsisten
+   ========================================================================== */
+.report-header-box {
+    background: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    border-radius: 4px !important;
+    padding: 14px 18px !important;
+    margin-bottom: 16px !important;
+    box-shadow: none !important;
+}
 
+.report-header-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
 
+.report-header-info,
+.report-title-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
 
+.report-header-icon,
+.report-icon-badge {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border-radius: 4px !important;
+    background: #e6f4ea !important;
+    border: 1px solid #b7e1cd !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #0d9f4f !important;
+    font-size: 1.3rem !important;
+}
+
+.report-header-title,
+.report-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+    color: #202124 !important;
+    margin: 0 !important;
+    line-height: 1.25 !important;
+}
+
+.report-header-subtitle,
+.report-subtitle {
+    font-size: 0.82rem !important;
+    color: #64748b !important;
+    margin-top: 3px !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    line-height: 1.4 !important;
+}
+
+/* Universal 2-Tier Toolbar Row */
+.report-header-toolbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e0e0e0 !important;
+}
+
+.report-header-toolbar-left,
+.report-header-toolbar-right {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+@media (max-width: 991px) {
+    .report-header-toolbar-left,
+    .report-header-toolbar-right {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+}
+
+.report-header-toolbar .btn,
+.report-header-actions .btn {
+    border-radius: 4px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    padding: 6px 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+    height: 33px !important;
+    line-height: 1 !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+/* Pengelompokan Tombol Terkait */
+.report-action-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+}
+
+/* Warna Khusus Tombol Toolbar (Menjamin Konsistensi & Tidak Tertimpa .btn-primary) */
+.btn-navy {
+    background-color: #0b3b7b !important;
+    border: 1px solid #082852 !important;
+    color: #ffffff !important;
+}
+.btn-navy:hover {
+    background-color: #07254e !important;
+    border-color: #051a37 !important;
+    color: #ffffff !important;
+}
+
+.btn-amber {
+    background-color: #f59e0b !important;
+    border: 1px solid #d97706 !important;
+    color: #ffffff !important;
+}
+.btn-amber:hover {
+    background-color: #d97706 !important;
+    border-color: #b45309 !important;
+    color: #ffffff !important;
+}
+
+.btn-excel {
+    background-color: #0d9f4f !important;
+    border: 1px solid #076e34 !important;
+    color: #ffffff !important;
+}
+.btn-excel:hover {
+    background-color: #076e34 !important;
+    border-color: #055026 !important;
+    color: #ffffff !important;
+}
+
+.btn-paper {
+    background-color: #ffffff !important;
+    border: 1px solid #b8b8b8 !important;
+    color: #333333 !important;
+}
+.btn-paper:hover {
+    background-color: #f5f5f5 !important;
+    border-color: #999999 !important;
+    color: #111111 !important;
+}

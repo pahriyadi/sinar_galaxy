@@ -176,37 +176,48 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
 ?>
 
 <div class="content-wrapper" style="background-color: #fcfcfc;">
-    <!-- Content Header -->
-    <div class="content-header" style="padding: 14px 18px 8px; background: #ffffff; border-bottom: 1px solid #e0e0e0; margin-bottom: 15px;">
+    <!-- Content Header (Paper White v2.0) -->
+    <div class="content-header no-print" style="padding: 14px 18px 8px; margin-bottom: 0;">
         <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-7">
+            <div class="report-header-box">
+                <!-- Baris 1: Judul Halaman & Identitas -->
+                <div class="report-header-top">
                     <div class="d-flex align-items-center">
-                        <div style="width: 40px; height: 40px; border-radius: 4px; background: #e6f4ea; border: 1px solid #b7e1cd; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: #0d9f4f; font-size: 1.2rem;">
+                        <div class="report-header-icon mr-3">
                             <i class="fas fa-list-check"></i>
                         </div>
                         <div>
-                            <h1 class="m-0 text-dark" style="font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px;">Manifes Keberangkatan Armada</h1>
-                            <div class="text-muted" style="font-size: 0.83rem;">
-                                <span>Rekap jadwal keberangkatan unit travel dan manifest paket kargo</span>
-                                <span class="mx-1">•</span>
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                                <h1 class="report-header-title">Manifes Keberangkatan Armada</h1>
                                 <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600;">
                                     <i class="fas fa-building mr-1"></i><?= $role === 'super admin' ? 'Seluruh Cabang PO' : 'PO ' . htmlspecialchars($asal_po) ?>
                                 </span>
-                                <span class="badge badge-secondary" style="background: #f1f3f4; color: #495057; border: 1px solid #dadce0; font-weight: 600;">
+                                <span class="badge" style="background: #f1f3f4; color: #495057; border: 1px solid #dadce0; font-weight: 600;">
                                     <i class="fas fa-user-shield mr-1"></i><?= htmlspecialchars(strtoupper($role)) ?>
                                 </span>
+                            </div>
+                            <div class="report-header-subtitle">
+                                Rekap jadwal keberangkatan unit travel dan manifest paket kargo
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-5 text-right no-print">
-                    <button type="button" class="btn btn-default btn-sm btn-flat" onclick="window.print();" style="border: 1px solid #b8b8b8; background: #ffffff; font-weight: 600; margin-right: 6px;">
-                        <i class="fas fa-print mr-1 text-muted"></i> Cetak Manifes
-                    </button>
-                    <button type="button" class="btn btn-success btn-sm btn-flat" onclick="exportToExcel()" style="background-color: #0d9f4f; border-color: #076e34; font-weight: 600;">
-                        <i class="fas fa-file-excel mr-1"></i> Export Excel
-                    </button>
+
+                <!-- Baris 2: Toolbar Aksi -->
+                <div class="report-header-toolbar no-print">
+                    <div class="report-header-toolbar-left">
+                        <span class="text-muted" style="font-size: 0.8rem;">
+                            <i class="fas fa-info-circle mr-1 text-info"></i> Rekapitulasi unit jadwal armada aktif
+                        </span>
+                    </div>
+                    <div class="report-header-toolbar-right">
+                        <button type="button" class="btn btn-paper btn-sm" onclick="window.print();" title="Cetak Manifes">
+                            <i class="fas fa-print mr-1 text-muted"></i> Cetak Manifes
+                        </button>
+                        <button type="button" class="btn btn-excel btn-sm font-weight-bold" onclick="exportToExcel()" title="Export Excel">
+                            <i class="fas fa-file-excel mr-1"></i> Export Excel
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

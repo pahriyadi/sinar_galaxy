@@ -76,3 +76,95 @@ $navbar_app_name = function_exists('getSetting') ? getSetting('app_name', 'Sinar
     </li>
   </ul>
 </nav>
+
+<?php
+// =========================================================================
+// NOTIFIKASI STICKY HEADER: PENUGASAN PLAT ARMADA (H-2 s/d HARI-H)
+// Muncul otomatis bagi role Super Admin & Admin jika ada tiket belum ada plat
+// =========================================================================
+if (in_array(strtolower((string)$role), ['super admin', 'admin']) && isset($conn) && $conn instanceof mysqli):
+    $qPendingH2 = @$conn->query("SELECT 
+        COUNT(*) as total_pending,
+        SUM(CASE WHEN DATE(tanggal_berangkat) = CURDATE() THEN 1 ELSE 0 END) as jml_hari_ini,
+        SUM(CASE WHEN DATE(tanggal_berangkat) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN 1 ELSE 0 END) as jml_h1,
+        SUM(CASE WHEN DATE(tanggal_berangkat) = DATE_ADD(CURDATE(), INTERVAL 2 DAY) THEN 1 ELSE 0 END) as jml_h2,
+        MIN(DATE(tanggal_berangkat)) as tgl_terdekat
+    FROM data_pemesanan
+    WHERE (no_plat_id IS NULL OR no_plat_id = '' OR no_plat_id = '-' OR no_plat_id = 'BELUM DITENTUKAN')
+      AND DATE(tanggal_berangkat) <= DATE_ADD(CURDATE(), INTERVAL 2 DAY)
+      AND DATE(tanggal_berangkat) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY)");
+
+    $dataPending = $qPendingH2 ? $qPendingH2->fetch_assoc() : null;
+    $totalPendingH2 = (int)($dataPending['total_pending'] ?? 0);
+
+    if ($totalPendingH2 > 0):
+        $tglTarget = $dataPending['tgl_terdekat'] ?: date('Y-m-d');
+        $jmlHariIni = (int)($dataPending['jml_hari_ini'] ?? 0);
+        $jmlH1 = (int)($dataPending['jml_h1'] ?? 0);
+        $jmlH2 = (int)($dataPending['jml_h2'] ?? 0);
+?>
+<div id="stickyPendingPlatAlert" class="main-header no-print border-bottom" style="background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%); border-color: #fcd34d !important; padding: 7px 16px; font-size: 0.83rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;">
+  <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">
+    
+    <!-- Informasi & Peringatan -->
+    <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+      <span class="badge text-uppercase font-weight-bold px-2 py-1" style="background: #d97706; color: #ffffff; font-size: 0.72rem; letter-spacing: 0.3px; border-radius: 4px; box-shadow: 0 1px 3px rgba(217,119,6,0.3);">
+        <i class="fas fa-exclamation-triangle mr-1"></i> Perhatian: H-2 Keberangkatan
+      </span>
+      <span class="text-dark font-weight-600">
+        Terdapat <strong class="text-danger" style="font-size: 0.95rem;"><?= $totalPendingH2 ?> Penumpang</strong> yang belum ditentukan nomor plat armadanya!
+      </span>
+
+      <!-- Rincian Waktu -->
+      <div class="d-inline-flex align-items-center ml-lg-2 flex-wrap" style="gap: 4px;">
+        <?php if ($jmlHariIni > 0): ?>
+          <span class="badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-size: 0.72rem;">
+            Hari Ini: <strong><?= $jmlHariIni ?></strong>
+          </span>
+        <?php endif; ?>
+        <?php if ($jmlH1 > 0): ?>
+          <span class="badge" style="background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; font-size: 0.72rem;">
+            Besok (H-1): <strong><?= $jmlH1 ?></strong>
+          </span>
+        <?php endif; ?>
+        <?php if ($jmlH2 > 0): ?>
+          <span class="badge" style="background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; font-size: 0.72rem;">
+            Lusa (H-2): <strong><?= $jmlH2 ?></strong>
+          </span>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <!-- Tombol Aksi Cepat & Minimize -->
+    <div class="d-flex align-items-center ml-auto" style="gap: 6px;">
+      <a href="<?= $base ?>laporan/daftar_keberangkatan_all?tgl_dari=<?= $tglTarget ?>&no_plat=PENDING&auto_open=isi_plat" class="btn btn-sm font-weight-bold text-white" style="background-color: #0b3b7b; border-color: #082852; padding: 3px 12px; font-size: 0.78rem; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.12);" title="Buka modal penetapan plat untuk keberangkatan terdekat">
+        <i class="fas fa-bus mr-1"></i> Tetapkan Plat Sekarang
+      </a>
+      <button type="button" class="btn btn-xs btn-outline-secondary ml-1" onclick="dismissPendingPlatAlert()" title="Sembunyikan notifikasi sementara" style="border-radius: 3px; font-size: 0.7rem; padding: 2px 6px; border-color: #d1d5db; background: rgba(255,255,255,0.8);">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  if (sessionStorage.getItem('hide_pending_plat_alert') === '1') {
+    var el = document.getElementById('stickyPendingPlatAlert');
+    if (el) el.style.display = 'none';
+  }
+})();
+
+function dismissPendingPlatAlert() {
+  var el = document.getElementById('stickyPendingPlatAlert');
+  if (el) {
+    el.style.display = 'none';
+    sessionStorage.setItem('hide_pending_plat_alert', '1');
+  }
+}
+</script>
+<?php
+    endif;
+endif;
+?>

@@ -267,6 +267,17 @@ $app_name_sidebar = function_exists('getSetting') ? getSetting('app_name', 'Sina
             </a></li>
         <?php endif; ?>
 
+        <li class="nav-header">INFORMASI & BANTUAN</li>
+        <li class="nav-item">
+          <a href="#" id="btnOpenWhatsNew" class="nav-link" style="color: #0b3b7b; font-weight: 600;" title="Lihat rangkuman fitur baru dan pembaruan sistem">
+            <i class="nav-icon fas fa-bullhorn text-warning"></i>
+            <p>
+              Apa yang Baru?
+              <span class="badge badge-warning right font-weight-bold" style="font-size: 0.68rem; background: #f59e0b; color: #ffffff; border-radius: 4px;">v3.3</span>
+            </p>
+          </a>
+        </li>
+
         <li class="nav-item mt-3 pt-2 mb-3" style="border-top: 1px solid #e0e0e0;">
           <a href="<?= $base ?>logout" class="nav-link text-danger" style="font-weight: 600;">
             <i class="nav-icon fas fa-sign-out-alt"></i>

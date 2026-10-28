@@ -608,11 +608,12 @@ if ($result) {
                       <label class="text-xs font-weight-bold text-muted mb-1" for="no_plat_id">Unit Armada / Plat <span class="text-danger">*</span></label>
                       <select class="form-control form-control-sm" name="no_plat_id" id="no_plat_id" onchange="autofillTravel()" required style="font-size: 13px;">
                         <option value="">-- Pilih Plat --</option>
+                        <option value="BELUM DITENTUKAN" style="font-weight: bold; color: #b45309; background-color: #fef3c7;">⏳ [BELUM DITENTUKAN - ISI NANTI]</option>
                         <?php
-                        $query = "SELECT no_plat FROM data_travel";
+                        $query = "SELECT no_plat, kelas FROM data_travel ORDER BY no_plat";
                         $resultT = mysqli_query($conn, $query);
                         while ($rowT = mysqli_fetch_assoc($resultT)) {
-                          echo '<option value="' . htmlspecialchars($rowT['no_plat']) . '">' . htmlspecialchars($rowT['no_plat']) . '</option>';
+                          echo '<option value="' . htmlspecialchars($rowT['no_plat']) . '">' . htmlspecialchars($rowT['no_plat']) . ' (' . htmlspecialchars($rowT['kelas']) . ')</option>';
                         }
                         ?>
                       </select>
@@ -1376,6 +1377,16 @@ if ($result) {
 
       function autofillTravel() {
         var noPlat = document.getElementById('no_plat_id').value;
+        if (noPlat === 'BELUM DITENTUKAN') {
+          document.getElementById('kelas_id').value = 'BELUM DITENTUKAN';
+          if (!document.getElementById('harga_id').value || parseFloat(document.getElementById('harga_id').value) <= 0) {
+            document.getElementById('harga_id').value = '180000';
+          }
+          if ($('#single_amount').length && (!$('#single_amount').val() || parseFloat($('#single_amount').val()) <= 0)) {
+            $('#single_amount').val('180000');
+          }
+          return;
+        }
         if (noPlat) {
           fetch('get_travel.php?no_plat=' + encodeURIComponent(noPlat))
             .then(response => response.json())

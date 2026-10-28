@@ -259,14 +259,6 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
     --theme-green-hover: #0b8040;
 }
 
-.report-header-box {
-    background: #ffffff;
-    border: 1px solid #b8b8b8;
-    border-radius: 4px;
-    padding: 14px 18px;
-    margin-bottom: 16px;
-    box-shadow: none !important;
-}
 
 .filter-card-flat {
     background: #ffffff;
@@ -539,58 +531,69 @@ $tanggal_display = date('d/m/Y', strtotime($tanggal_berangkat));
     <div class="content-header no-print" style="padding: 14px 18px 8px; margin-bottom: 0;">
         <div class="container-fluid">
             <div class="report-header-box">
-                <div class="row align-items-center">
-                    <div class="col-md-7">
-                        <div class="d-flex align-items-center">
-                            <div style="width: 44px; height: 44px; border-radius: 4px; background: #e6f4ea; border: 1px solid #b7e1cd; display: flex; align-items: center; justify-content: center; margin-right: 14px; color: #0d9f4f; font-size: 1.3rem;">
-                                <i class="fas fa-file-invoice-dollar"></i>
+                <!-- Baris 1: Judul Halaman & Identitas (Membentang Luas, Bebas dari Terjepit) -->
+                <div class="report-header-top">
+                    <div class="d-flex align-items-center">
+                        <div class="report-header-icon mr-3">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                                <h1 class="report-header-title">Manifes Keberangkatan &amp; Audit Kasir/Bank</h1>
+                                <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600;">
+                                    <i class="fas fa-building mr-1"></i><?= $role === 'super admin' ? 'Seluruh Cabang PO' : 'PO ' . htmlspecialchars($asal_po) ?>
+                                </span>
+                                <span class="badge" style="background: #f1f3f4; color: #495057; border: 1px solid #dadce0; font-weight: 600;">
+                                    <i class="fas fa-user-shield mr-1"></i><?= htmlspecialchars(strtoupper($role)) ?>
+                                </span>
                             </div>
-                            <div>
-                                <h1 class="m-0 text-dark" style="font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px;">Manifes Keberangkatan & Audit Kasir/Bank</h1>
-                                <div class="text-muted" style="font-size: 0.83rem; margin-top: 2px;">
-                                    <span>Audit rincian 17 kolom manifes penumpang, kargo, pembayaran tunai kasir, dan transfer rekening</span>
-                                    <span class="mx-1">•</span>
-                                    <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600;">
-                                        <i class="fas fa-building mr-1"></i><?= $role === 'super admin' ? 'Seluruh Cabang PO' : 'PO ' . htmlspecialchars($asal_po) ?>
-                                    </span>
-                                    <span class="badge" style="background: #f1f3f4; color: #495057; border: 1px solid #dadce0; font-weight: 600;">
-                                        <i class="fas fa-user-shield mr-1"></i><?= htmlspecialchars(strtoupper($role)) ?>
-                                    </span>
-                                </div>
+                            <div class="report-header-subtitle">
+                                Audit rincian 17 kolom manifes penumpang, kargo, pembayaran tunai kasir, dan transfer rekening
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-5 text-right no-print mt-2 mt-md-0">
-                        <?php 
-                        $tiket_ids = [];
-                        $resi_ids = [];
-                        foreach ($rekap as $r_item) {
-                            if ($r_item['jenis_transaksi'] === 'Tiket') {
-                                $tiket_ids[] = (int)$r_item['id_transaksi'];
-                            } elseif ($r_item['jenis_transaksi'] === 'Paket') {
-                                $resi_ids[] = (int)$r_item['id_transaksi'];
-                            }
+                </div>
+
+                <!-- Baris 2: Toolbar Aksi Terbuka (Terbagi Kiri & Kanan dengan Rapi) -->
+                <div class="report-header-toolbar no-print">
+                    <?php 
+                    $tiket_ids = [];
+                    $resi_ids = [];
+                    foreach ($rekap as $r_item) {
+                        if ($r_item['jenis_transaksi'] === 'Tiket') {
+                            $tiket_ids[] = (int)$r_item['id_transaksi'];
+                        } elseif ($r_item['jenis_transaksi'] === 'Paket') {
+                            $resi_ids[] = (int)$r_item['id_transaksi'];
                         }
-                        $tiket_ids_str = implode(',', $tiket_ids);
-                        $resi_ids_str = implode(',', $resi_ids);
-                        ?>
+                    }
+                    $tiket_ids_str = implode(',', $tiket_ids);
+                    $resi_ids_str = implode(',', $resi_ids);
+                    ?>
+
+                    <!-- Sisi Kiri Toolbar: E-Tiket & E-Resi Terkait (Jika Ada Data) -->
+                    <div class="report-header-toolbar-left">
                         <?php if (!empty($tiket_ids_str)): ?>
-                        <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-info btn-sm btn-flat font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Tiket penumpang pada manifes ini">
-                            <i class="fas fa-ticket-alt mr-1"></i> Cetak E-Tiket (<?= count($tiket_ids) ?>)
+                        <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-navy btn-sm font-weight-bold" title="Cetak seluruh E-Tiket penumpang pada manifes ini">
+                            <i class="fas fa-ticket-alt mr-1"></i> E-Tiket (<?= count($tiket_ids) ?>)
                         </a>
                         <?php endif; ?>
+
                         <?php if (!empty($resi_ids_str)): ?>
-                        <a href="../data_pengiriman/cetak_resi.php?id=<?= $resi_ids_str ?>" target="_blank" class="btn btn-success btn-sm btn-flat font-weight-bold" style="background-color: #0d9f4f; border-color: #076e34; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Resi paket / kargo pada manifes ini">
-                            <i class="fas fa-boxes mr-1"></i> Cetak E-Resi (<?= count($resi_ids) ?>)
+                        <a href="../data_pengiriman/cetak_resi.php?id=<?= $resi_ids_str ?>" target="_blank" class="btn btn-navy btn-sm font-weight-bold" style="background-color: #0284c7 !important; border-color: #0369a1 !important;" title="Cetak seluruh E-Resi paket / kargo pada manifes ini">
+                            <i class="fas fa-boxes mr-1"></i> E-Resi (<?= count($resi_ids) ?>)
                         </a>
                         <?php endif; ?>
-                        <button type="button" class="btn btn-default btn-sm btn-flat" onclick="previewPrint()" style="border: 1px solid #b8b8b8; background: #ffffff; font-weight: 600; margin-right: 6px;">
+                    </div>
+
+                    <!-- Sisi Kanan Toolbar: Cetak & Ekspor Manifes -->
+                    <div class="report-header-toolbar-right">
+                        <button type="button" class="btn btn-paper btn-sm" onclick="previewPrint()" title="Pratinjau tampilan cetak manifes">
                             <i class="fas fa-eye mr-1 text-info"></i> Pratinjau Cetak
                         </button>
-                        <button type="button" class="btn btn-primary btn-sm btn-flat" onclick="printReport()" style="background-color: #0056b3; border-color: #004085; font-weight: 600; margin-right: 6px;">
+                        <button type="button" class="btn btn-navy btn-sm font-weight-bold" onclick="printReport()" title="Cetak langsung lembar manifes format A4">
                             <i class="fas fa-print mr-1"></i> Cetak Manifes (A4)
                         </button>
-                        <button type="button" class="btn btn-success btn-sm btn-flat" onclick="exportToExcel()" style="background-color: #0d9f4f; border-color: #076e34; font-weight: 600;">
+                        <button type="button" class="btn btn-excel btn-sm font-weight-bold" onclick="exportToExcel()" title="Download rekap manifes ke Microsoft Excel">
                             <i class="fas fa-file-excel mr-1"></i> Export Excel
                         </button>
                     </div>

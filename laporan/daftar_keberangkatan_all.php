@@ -82,8 +82,13 @@ if ($tgl_dari && $tgl_sampai) {
 }
 
 if ($no_plat) {
-    $where_pemesanan .= " AND pm.no_plat_id = '" . mysqli_real_escape_string($conn, $no_plat) . "'";
-    $where_pengiriman .= " AND pg.no_plat_id = '" . mysqli_real_escape_string($conn, $no_plat) . "'";
+    if ($no_plat === 'PENDING') {
+        $where_pemesanan .= " AND (pm.no_plat_id IS NULL OR pm.no_plat_id = '' OR pm.no_plat_id = '-' OR pm.no_plat_id = 'BELUM DITENTUKAN')";
+        $where_pengiriman .= " AND (pg.no_plat_id IS NULL OR pg.no_plat_id = '' OR pg.no_plat_id = '-' OR pg.no_plat_id = 'BELUM DITENTUKAN')";
+    } else {
+        $where_pemesanan .= " AND pm.no_plat_id = '" . mysqli_real_escape_string($conn, $no_plat) . "'";
+        $where_pengiriman .= " AND pg.no_plat_id = '" . mysqli_real_escape_string($conn, $no_plat) . "'";
+    }
 }
 
 if ($status_pembayaran) {
@@ -212,14 +217,6 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
     --theme-green-hover: #0b8040;
 }
 
-.report-header-box {
-    background: #ffffff;
-    border: 1px solid #b8b8b8;
-    border-radius: 4px;
-    padding: 14px 18px;
-    margin-bottom: 16px;
-    box-shadow: none !important;
-}
 
 .filter-card-flat {
     background: #ffffff;
@@ -490,63 +487,78 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
     <div class="content-header no-print" style="padding: 14px 18px 8px; margin-bottom: 0;">
         <div class="container-fluid">
             <div class="report-header-box">
-                <div class="row align-items-center">
-                    <div class="col-md-7">
-                        <div class="d-flex align-items-center">
-                            <div style="width: 44px; height: 44px; border-radius: 4px; background: #e6f4ea; border: 1px solid #b7e1cd; display: flex; align-items: center; justify-content: center; margin-right: 14px; color: #0d9f4f; font-size: 1.3rem;">
-                                <i class="fas fa-bus-alt"></i>
+                <!-- Baris 1: Judul Halaman & Identitas (Membentang Luas, Bebas dari Terjepit) -->
+                <div class="report-header-top">
+                    <div class="d-flex align-items-center">
+                        <div class="report-header-icon mr-3">
+                            <i class="fas fa-bus-alt"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                                <h1 class="report-header-title">Manifes Keberangkatan (Semua Cabang)</h1>
+                                <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600;">
+                                    <i class="fas fa-building mr-1"></i><?= $role === 'super admin' ? 'Seluruh Cabang PO' : 'PO ' . htmlspecialchars($asal_po) ?>
+                                </span>
+                                <span class="badge" style="background: #f1f3f4; color: #495057; border: 1px solid #dadce0; font-weight: 600;">
+                                    <i class="fas fa-user-shield mr-1"></i><?= htmlspecialchars(strtoupper($role)) ?>
+                                </span>
                             </div>
-                            <div>
-                                <h1 class="m-0 text-dark" style="font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px;">Manifes Keberangkatan (Semua Cabang)</h1>
-                                <div class="text-muted" style="font-size: 0.83rem; margin-top: 2px;">
-                                    <span>Rekap jadwal penumpang & paket barang terpadu lintas seluruh kantor cabang</span>
-                                    <span class="mx-1">•</span>
-                                    <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600;">
-                                        <i class="fas fa-building mr-1"></i><?= $role === 'super admin' ? 'Seluruh Cabang PO' : 'PO ' . htmlspecialchars($asal_po) ?>
-                                    </span>
-                                    <span class="badge" style="background: #f1f3f4; color: #495057; border: 1px solid #dadce0; font-weight: 600;">
-                                        <i class="fas fa-user-shield mr-1"></i><?= htmlspecialchars(strtoupper($role)) ?>
-                                    </span>
-                                </div>
+                            <div class="report-header-subtitle">
+                                Rekap jadwal penumpang &amp; paket barang terpadu lintas seluruh kantor cabang
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 text-right no-print mt-2 mt-md-0">
-                        <?php 
-                        $tiket_ids = [];
-                        $resi_ids = [];
-                        foreach ($rekap as $r_item) {
-                            if ($r_item['jenis_transaksi'] === 'Tiket') {
-                                $tiket_ids[] = (int)$r_item['id_transaksi'];
-                            } elseif ($r_item['jenis_transaksi'] === 'Paket') {
-                                $resi_ids[] = (int)$r_item['id_transaksi'];
-                            }
+                </div>
+
+                <!-- Baris 2: Toolbar Aksi Terbuka (Terbagi Kiri & Kanan dengan Rapi) -->
+                <div class="report-header-toolbar no-print">
+                    <?php 
+                    $tiket_ids = [];
+                    $resi_ids = [];
+                    foreach ($rekap as $r_item) {
+                        if ($r_item['jenis_transaksi'] === 'Tiket') {
+                            $tiket_ids[] = (int)$r_item['id_transaksi'];
+                        } elseif ($r_item['jenis_transaksi'] === 'Paket') {
+                            $resi_ids[] = (int)$r_item['id_transaksi'];
                         }
-                        $tiket_ids_str = implode(',', $tiket_ids);
-                        $resi_ids_str = implode(',', $resi_ids);
-                        ?>
-                        <?php if (!empty($tiket_ids_str)): ?>
-                        <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-info btn-sm btn-flat font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Tiket penumpang pada tabel ini">
-                            <i class="fas fa-ticket-alt mr-1"></i> Cetak E-Tiket (<?= count($tiket_ids) ?>)
-                        </a>
-                        <?php endif; ?>
-                        <?php if (!empty($resi_ids_str)): ?>
-                        <a href="../data_pengiriman/cetak_resi.php?id=<?= $resi_ids_str ?>" target="_blank" class="btn btn-success btn-sm btn-flat font-weight-bold" style="background-color: #0d9f4f; border-color: #076e34; color: #ffffff; margin-right: 6px;" title="Cetak seluruh E-Resi paket / kargo pada tabel ini">
-                            <i class="fas fa-boxes mr-1"></i> Cetak E-Resi (<?= count($resi_ids) ?>)
-                        </a>
-                        <?php endif; ?>
-                        <?php if ($role === 'super admin'): ?>
-                        <button type="button" class="btn btn-warning btn-sm btn-flat font-weight-bold" id="btnOpenModalGantiArmada" style="background-color: #f59e0b; border-color: #d97706; color: #ffffff; margin-right: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.12);" title="Alihkan seluruh penumpang dari travel yang batal ke armada pengganti">
+                    }
+                    $tiket_ids_str = implode(',', $tiket_ids);
+                    $resi_ids_str = implode(',', $resi_ids);
+                    ?>
+
+                    <!-- Sisi Kiri Toolbar: Manajemen Operasional Armada -->
+                    <div class="report-header-toolbar-left">
+                        <?php if ($role === 'super admin' || $role === 'admin'): ?>
+                        <button type="button" class="btn btn-excel btn-sm font-weight-bold" id="btnOpenModalIsiPlat" title="Tetapkan / Isi nomor plat armada untuk penumpang yang belum memiliki plat">
+                            <i class="fas fa-bus mr-1"></i> Isi Plat Penumpang
+                        </button>
+                        <button type="button" class="btn btn-amber btn-sm font-weight-bold" id="btnOpenModalGantiArmada" title="Alihkan seluruh penumpang dari travel yang batal ke armada pengganti">
                             <i class="fas fa-exchange-alt mr-1"></i> Ganti Armada Pengganti
                         </button>
                         <?php endif; ?>
-                        <button type="button" class="btn btn-default btn-sm btn-flat" onclick="previewPrint()" style="border: 1px solid #b8b8b8; background: #ffffff; font-weight: 600; margin-right: 6px;">
+
+                        <?php if (!empty($tiket_ids_str)): ?>
+                        <a href="../data_pemesanan/cetak_etiket.php?id=<?= $tiket_ids_str ?>" target="_blank" class="btn btn-navy btn-sm font-weight-bold" title="Cetak seluruh E-Tiket penumpang pada tabel ini">
+                            <i class="fas fa-ticket-alt mr-1"></i> E-Tiket (<?= count($tiket_ids) ?>)
+                        </a>
+                        <?php endif; ?>
+
+                        <?php if (!empty($resi_ids_str)): ?>
+                        <a href="../data_pengiriman/cetak_resi.php?id=<?= $resi_ids_str ?>" target="_blank" class="btn btn-navy btn-sm font-weight-bold" style="background-color: #0284c7 !important; border-color: #0369a1 !important;" title="Cetak seluruh E-Resi paket / kargo pada tabel ini">
+                            <i class="fas fa-boxes mr-1"></i> E-Resi (<?= count($resi_ids) ?>)
+                        </a>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Sisi Kanan Toolbar: Cetak & Ekspor Manifes -->
+                    <div class="report-header-toolbar-right">
+                        <button type="button" class="btn btn-paper btn-sm" onclick="previewPrint()" title="Pratinjau tampilan cetak manifes">
                             <i class="fas fa-eye mr-1 text-info"></i> Pratinjau Cetak
                         </button>
-                        <button type="button" class="btn btn-primary btn-sm btn-flat" onclick="printReport()" style="background-color: #0056b3; border-color: #004085; font-weight: 600; margin-right: 6px;">
+                        <button type="button" class="btn btn-navy btn-sm font-weight-bold" onclick="printReport()" title="Cetak langsung lembar manifes format A4">
                             <i class="fas fa-print mr-1"></i> Cetak Manifes (A4)
                         </button>
-                        <button type="button" class="btn btn-success btn-sm btn-flat" onclick="exportToExcel()" style="background-color: #0d9f4f; border-color: #076e34; font-weight: 600;">
+                        <button type="button" class="btn btn-excel btn-sm font-weight-bold" onclick="exportToExcel()" title="Download rekap manifes ke Microsoft Excel">
                             <i class="fas fa-file-excel mr-1"></i> Export Excel
                         </button>
                     </div>
@@ -586,6 +598,7 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                             <label class="form-label font-weight-bold text-dark" style="font-size: 0.8rem; margin-bottom: 4px;">Armada / No. Plat:</label>
                             <select name="no_plat" class="form-control form-control-sm" style="border: 1px solid #b8b8b8; border-radius: 4px;">
                                 <option value="">-- Semua Armada --</option>
+                                <option value="PENDING" <?= ($no_plat === 'PENDING') ? 'selected' : '' ?> style="font-weight: 600; color: #b45309;">⏳ [Belum Ada Plat / Pending]</option>
                                 <?php foreach ($travelOptions as $travel): ?>
                                     <option value="<?= htmlspecialchars($travel['no_plat']) ?>" <?= ($no_plat == $travel['no_plat']) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($travel['no_plat']) ?> (<?= htmlspecialchars($travel['kelas']) ?>)
@@ -753,7 +766,13 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                                             </span>
                                         </td>
                                         <td class="text-center font-weight-bold" style="color: #0056b3;">
-                                            <?= htmlspecialchars($row['no_plat_id'] ?: '-') ?>
+                                            <?php if (empty($row['no_plat_id']) || $row['no_plat_id'] === '-' || $row['no_plat_id'] === 'BELUM DITENTUKAN'): ?>
+                                                <span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.72rem; padding: 4px 6px;">
+                                                    <i class="fas fa-clock mr-1"></i> Belum Ada Plat
+                                                </span>
+                                            <?php else: ?>
+                                                <?= htmlspecialchars($row['no_plat_id']) ?>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="text-center">
                                             <?php if ($isTiket && !empty($row['kursi']) && $row['kursi'] !== '-'): ?>
@@ -802,7 +821,7 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
     </section>
 </div>
 
-<?php if ($role === 'super admin'): ?>
+<?php if ($role === 'super admin' || $role === 'admin'): ?>
 <!-- Modal Ganti Armada Pengganti (Tukar Plat Massal) -->
 <div class="modal fade no-print" id="modalGantiArmada" tabindex="-1" role="dialog" aria-labelledby="modalGantiArmadaLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -915,6 +934,148 @@ $rata_rata_transaksi = $total_transaksi > 0 ? $total_pendapatan / $total_transak
                 </button>
                 <button type="submit" id="btnSubmitGantiArmada" class="btn btn-warning btn-sm btn-flat font-weight-bold" style="background-color: #f59e0b; border-color: #d97706; color: #ffffff; border-radius: 4px; padding: 6px 20px;">
                     <i class="fas fa-exchange-alt mr-1"></i> Alihkan Seluruh Penumpang Sekarang
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Isi / Penetapan Plat Penumpang (Khusus Penumpang Belum Ada Plat) -->
+<div class="modal fade no-print" id="modalIsiPlat" tabindex="-1" role="dialog" aria-labelledby="modalIsiPlatLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="max-width: 860px;">
+        <form id="formIsiPlat" class="modal-content" style="border: 1px solid #bfdbfe; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden;">
+            <div class="modal-header" style="background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 14px 20px;">
+                <div class="d-flex align-items-center">
+                    <div style="width: 38px; height: 38px; border-radius: 4px; background: #dbeafe; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: #1d4ed8; font-size: 1.2rem;">
+                        <i class="fas fa-bus"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-dark" id="modalIsiPlatLabel" style="font-size: 1.15rem; margin: 0;">
+                            Penetapan & Isi Plat Armada Penumpang
+                        </h5>
+                        <small class="text-muted">Pilih penumpang yang telah memesan tiket dan tentukan nomor plat unit mobil yang akan dinaiki</small>
+                    </div>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; color: #5f6368;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" style="padding: 20px 24px; background: #ffffff;">
+                <!-- Filter Section -->
+                <div class="p-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <div class="row align-items-end">
+                        <div class="col-md-5 mb-2 mb-md-0">
+                            <label class="font-weight-bold text-dark" style="font-size: 0.82rem; margin-bottom: 4px;">
+                                <i class="fas fa-calendar-alt text-primary mr-1"></i> Tanggal Keberangkatan <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control form-control-sm font-weight-bold" id="ip_tanggal" value="<?= htmlspecialchars($tgl_dari ?: date('Y-m-d')) ?>" required>
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <label class="font-weight-bold text-dark" style="font-size: 0.82rem; margin-bottom: 4px;">
+                                <i class="fas fa-clock text-primary mr-1"></i> Jam Keberangkatan
+                            </label>
+                            <select class="form-control form-control-sm font-weight-bold" id="ip_jam">
+                                <option value="all">-- Semua Jam Keberangkatan --</option>
+                                <?php
+                                $qJamRef = mysqli_query($conn, "SELECT jam FROM ref_jam_keberangkatan WHERE is_active = 1 ORDER BY jam ASC");
+                                if ($qJamRef && mysqli_num_rows($qJamRef) > 0) {
+                                    while ($rj = mysqli_fetch_assoc($qJamRef)) {
+                                        $jShort = substr($rj['jam'], 0, 5);
+                                        echo '<option value="' . $jShort . '">' . $jShort . ' WITA</option>';
+                                    }
+                                } else {
+                                    $defaultJams = ['07:00', '08:00', '10:00', '14:00', '17:00', '20:00'];
+                                    foreach ($defaultJams as $dj) {
+                                        echo '<option value="' . $dj . '">' . $dj . ' WITA</option>';
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-block font-weight-bold" id="btnMuatPenumpangPending" style="height: 31px;">
+                                <i class="fas fa-sync-alt mr-1"></i> Muat Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section List Penumpang Pending -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="font-weight-bold text-dark" style="font-size: 0.88rem;">
+                            <i class="fas fa-users text-primary mr-1"></i> Daftar Penumpang Menunggu Armada:
+                        </span>
+                        <div>
+                            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" id="ip_terpilih_badge" style="font-size: 0.8rem;">
+                                0 Penumpang Dipilih
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border rounded" style="max-height: 240px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0" style="font-size: 0.82rem;">
+                            <thead class="thead-light" style="position: sticky; top: 0; z-index: 1;">
+                                <tr>
+                                    <th style="width: 38px; text-align: center;">
+                                        <input type="checkbox" id="checkAllPenumpang" title="Pilih Semua">
+                                    </th>
+                                    <th style="width: 70px; text-align: center;">Kursi</th>
+                                    <th style="width: 80px; text-align: center;">Jam</th>
+                                    <th>Nama Penumpang</th>
+                                    <th>No. Telepon</th>
+                                    <th>Tujuan</th>
+                                    <th style="text-align: center;">Status Bayar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPenumpangPending">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="fas fa-spinner fa-spin mr-1"></i> Memuat daftar penumpang...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section Pilih Plat Armada Tujuan -->
+                <div class="row">
+                    <div class="col-md-7 mb-2">
+                        <label class="font-weight-bold text-dark" style="font-size: 0.85rem;">
+                            Tetapkan ke Unit Armada / Plat: <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-control form-control-sm font-weight-bold" id="ip_plat_baru" required style="border: 1.5px solid #2563eb;">
+                            <option value="">-- Pilih Armada Tujuan --</option>
+                            <?php
+                            $qTrv = mysqli_query($conn, "SELECT no_plat, kelas, jumlah_kursi FROM data_travel ORDER BY kelas ASC, no_plat ASC");
+                            while ($tc = mysqli_fetch_assoc($qTrv)) {
+                                echo '<option value="' . htmlspecialchars($tc['no_plat']) . '" data-kelas="' . htmlspecialchars($tc['kelas']) . '" data-kursi="' . (int)($tc['jumlah_kursi'] ?? 0) . '">';
+                                echo htmlspecialchars($tc['no_plat']) . ' &mdash; ' . htmlspecialchars($tc['kelas']) . ' (Kapasitas: ' . (int)($tc['jumlah_kursi'] ?? 0) . ' Kursi)';
+                                echo '</option>';
+                            }
+                            ?>
+                        </select>
+                        <small class="text-muted" id="ip_plat_info">
+                            Kelas layanan tiket penumpang akan otomatis disesuaikan dengan kelas armada yang dipilih.
+                        </small>
+                    </div>
+                    <div class="col-md-5 mb-2">
+                        <label class="font-weight-bold text-dark" style="font-size: 0.85rem;">
+                            Catatan Penugasan <span class="text-muted font-weight-normal">(Opsional)</span>:
+                        </label>
+                        <input type="text" class="form-control form-control-sm" id="ip_catatan" placeholder="Contoh: Unit reguler pagi / penugasan driver Pak Ahmad">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e0e0e0; padding: 12px 20px;">
+                <button type="button" class="btn btn-default btn-sm btn-flat font-weight-bold" data-dismiss="modal" style="border: 1px solid #b8b8b8; background: #ffffff; color: #4b5563; border-radius: 4px; padding: 6px 16px;">
+                    <i class="fas fa-times mr-1"></i> Batal
+                </button>
+                <button type="submit" id="btnSubmitIsiPlat" class="btn btn-primary btn-sm btn-flat font-weight-bold" style="background-color: #0b3b7b; border-color: #082852; color: #ffffff; border-radius: 4px; padding: 6px 20px;">
+                    <i class="fas fa-check-circle mr-1"></i> Tetapkan Plat ke Penumpang Terpilih
                 </button>
             </div>
         </form>
@@ -1173,8 +1334,8 @@ document.addEventListener('keydown', function(e) {
 </script>
 <?php include '../inc/footer.php'; ?>
 
-<?php if ($role === 'super admin'): ?>
-<!-- Handler Interaktif Fitur Ganti Armada Pengganti (Tukar Plat Massal) - Khusus Super Admin -->
+<?php if ($role === 'super admin' || $role === 'admin'): ?>
+<!-- Handler Interaktif Fitur Ganti Armada & Isi Plat Penumpang -->
 <script>
 $(function () {
     const defaultPlatFilter = '<?= htmlspecialchars($no_plat ?? '') ?>';
@@ -1394,6 +1555,232 @@ $(function () {
             }
         }
     });
+
+    // =========================================================================
+    // FITUR: PENETAPAN & ISI PLAT PENUMPANG (PLOT MASSAL)
+    // =========================================================================
+    
+    // Buka Modal Isi Plat Penumpang
+    $('#btnOpenModalIsiPlat').on('click', function () {
+        const tgl = $('#ip_tanggal').val() || '<?= htmlspecialchars($tgl_dari ?: date('Y-m-d')) ?>';
+        $('#ip_tanggal').val(tgl);
+        loadPenumpangPending();
+        $('#modalIsiPlat').modal('show');
+    });
+
+    $('#ip_tanggal, #ip_jam').on('change', function () {
+        loadPenumpangPending();
+    });
+
+    $('#btnMuatPenumpangPending').on('click', function () {
+        loadPenumpangPending();
+    });
+
+    function loadPenumpangPending() {
+        const tgl = $('#ip_tanggal').val();
+        const jam = $('#ip_jam').val();
+        const $tbody = $('#tbodyPenumpangPending');
+        const $badge = $('#ip_terpilih_badge');
+
+        $tbody.html('<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-1"></i> Memeriksa data penumpang...</td></tr>');
+        $('#checkAllPenumpang').prop('checked', false);
+        $badge.text('0 Penumpang Dipilih').removeClass('badge-primary text-white').addClass('badge-light text-dark');
+
+        $.ajax({
+            url: 'get_penumpang_pending_plat.php',
+            type: 'GET',
+            data: { tanggal: tgl, jam: jam },
+            dataType: 'json',
+            success: function (res) {
+                $tbody.empty();
+                if (res.status === 'success' && res.data && res.data.length > 0) {
+                    res.data.forEach(function (p) {
+                        const row = `
+                            <tr>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <input type="checkbox" class="check-penumpang-item" name="tiket_ids[]" value="${p.id_pemesanan}" data-nama="${p.nama}" data-kursi="${p.kursi}">
+                                </td>
+                                <td style="text-align: center; font-weight: bold; vertical-align: middle;">
+                                    <span class="badge badge-light border">Kursi ${p.kursi}</span>
+                                </td>
+                                <td style="text-align: center; font-weight: 600; vertical-align: middle;">${p.jam}</td>
+                                <td style="vertical-align: middle;">
+                                    <strong class="text-dark">${p.nama}</strong>
+                                    <div class="text-muted" style="font-size: 0.73rem;">NIP: ${p.nip}</div>
+                                </td>
+                                <td style="vertical-align: middle;">${p.no_hp}</td>
+                                <td style="vertical-align: middle;">${p.tujuan}</td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <span class="badge badge-success px-2 py-1">${p.status_pembayaran}</span>
+                                </td>
+                            </tr>
+                        `;
+                        $tbody.append(row);
+                    });
+
+                    // Centang semua penumpang secara otomatis
+                    $('#checkAllPenumpang').prop('checked', true);
+                    $('.check-penumpang-item').prop('checked', true);
+                    updateTerpilihCounter();
+                } else {
+                    $tbody.html('<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-check-circle text-success mr-1"></i> Tidak ada penumpang tanpa plat pada tanggal &amp; jam ini. Semua tiket sudah memiliki plat armada.</td></tr>');
+                }
+            },
+            error: function () {
+                $tbody.html('<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-1"></i> Gagal memuat data penumpang dari server.</td></tr>');
+            }
+        });
+    }
+
+    // Checkbox Pilih Semua
+    $('#checkAllPenumpang').on('change', function () {
+        const isChecked = $(this).is(':checked');
+        $('.check-penumpang-item').prop('checked', isChecked);
+        updateTerpilihCounter();
+    });
+
+    $(document).on('change', '.check-penumpang-item', function () {
+        const total = $('.check-penumpang-item').length;
+        const checked = $('.check-penumpang-item:checked').length;
+        $('#checkAllPenumpang').prop('checked', total > 0 && total === checked);
+        updateTerpilihCounter();
+    });
+
+    function updateTerpilihCounter() {
+        const checked = $('.check-penumpang-item:checked').length;
+        const $badge = $('#ip_terpilih_badge');
+        $badge.text(checked + ' Penumpang Dipilih');
+        if (checked > 0) {
+            $badge.removeClass('badge-light text-dark').addClass('badge-primary text-white');
+        } else {
+            $badge.removeClass('badge-primary text-white').addClass('badge-light text-dark');
+        }
+    }
+
+    // Submit Form Isi Plat
+    $('#formIsiPlat').on('submit', function (e) {
+        e.preventDefault();
+        const selectedIds = [];
+        $('.check-penumpang-item:checked').each(function () {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length === 0) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Perhatian', 'Silakan centang minimal satu penumpang yang akan dimasukkan ke armada ini!', 'warning');
+            } else {
+                alert('Silakan centang minimal satu penumpang!');
+            }
+            return;
+        }
+
+        const platBaru = $('#ip_plat_baru').val();
+        if (!platBaru) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Perhatian', 'Silakan pilih Armada / Nomor Plat tujuan terlebih dahulu!', 'warning');
+            } else {
+                alert('Silakan pilih Armada / Nomor Plat tujuan!');
+            }
+            $('#ip_plat_baru').focus();
+            return;
+        }
+
+        const $opt = $('#ip_plat_baru option:selected');
+        const kelas = $opt.data('kelas') || 'Travel';
+        const kapasitas = $opt.data('kursi') || 0;
+        const catatan = $('#ip_catatan').val();
+
+        const doSubmitIsiPlat = function () {
+            const $btn = $('#btnSubmitIsiPlat');
+            const origText = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
+
+            $.ajax({
+                url: 'isi_plat_aksi.php',
+                type: 'POST',
+                data: {
+                    plat_baru: platBaru,
+                    tiket_ids: selectedIds,
+                    catatan: catatan
+                },
+                dataType: 'json',
+                success: function (res) {
+                    $btn.prop('disabled', false).html(origText);
+                    if (res.status === 'success') {
+                        $('#modalIsiPlat').modal('hide');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil Ditetapkan!',
+                                text: res.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            alert(res.message);
+                            window.location.reload();
+                        }
+                    } else {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire('Gagal Menyimpan', res.message, 'error');
+                        } else {
+                            alert('Gagal: ' + res.message);
+                        }
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $btn.prop('disabled', false).html(origText);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('Kesalahan Server', 'Gagal memproses penetapan plat: ' + err, 'error');
+                    } else {
+                        alert('Kesalahan Server: ' + err);
+                    }
+                }
+            });
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Konfirmasi Penetapan Plat Armada',
+                html: `<div class="text-left" style="font-size: 0.92rem;">
+                    <p>Anda akan menetapkan armada untuk penumpang terpilih:</p>
+                    <ul class="mb-2">
+                        <li><strong>Armada / Plat</strong>: <span class="text-primary font-weight-bold">${platBaru} (${kelas})</span></li>
+                        <li><strong>Jumlah Penumpang</strong>: <strong>${selectedIds.length}</strong> Orang</li>
+                    </ul>
+                    <p class="text-muted mb-0">Nomor plat dan kelas armada penumpang akan otomatis diperbarui.</p>
+                </div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0b3b7b',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check mr-1"></i> Ya, Tetapkan Sekarang',
+                cancelButtonText: 'Batal'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    doSubmitIsiPlat();
+                }
+            });
+        } else {
+            if (confirm('Tetapkan ' + selectedIds.length + ' penumpang ke armada ' + platBaru + '?')) {
+                doSubmitIsiPlat();
+            }
+        }
+    });
+
+    // Auto-open modal jika diarahkan dari banner notifikasi header (H-2)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_open') === 'isi_plat') {
+        const tglParam = urlParams.get('tgl_dari');
+        if (tglParam) {
+            $('#ip_tanggal').val(tglParam);
+        }
+        setTimeout(function() {
+            loadPenumpangPending();
+            $('#modalIsiPlat').modal('show');
+        }, 350);
+    }
 });
 </script>
 <?php endif; ?>
