@@ -182,7 +182,7 @@ function asset_ver($relPath, $base = '') {
  * Auto-Migration Schema: Fitur Carter 1 Unit (v3.5.1)
  * Otomatis membuat 3 kolom baru di `data_travel` & `data_pemesanan` jika belum tersedia di database server.
  */
-if (isset($conn) && !$conn->connect_error && getSystemSetting('schema_v351_carter_migrated', '0') !== '1') {
+if (isset($conn) && !$conn->connect_error && getSetting('schema_v351_carter_migrated', '0') !== '1') {
     $chk1 = @$conn->query("SHOW COLUMNS FROM `data_travel` LIKE 'biaya_jemput_carter'");
     if ($chk1 && $chk1->num_rows === 0) {
         @$conn->query("ALTER TABLE `data_travel` ADD COLUMN `biaya_jemput_carter` DECIMAL(15,2) NOT NULL DEFAULT 150000.00 AFTER `harga`");
@@ -196,6 +196,6 @@ if (isset($conn) && !$conn->connect_error && getSystemSetting('schema_v351_carte
     if ($chk3 && $chk3->num_rows === 0) {
         @$conn->query("ALTER TABLE `data_pemesanan` ADD COLUMN `biaya_jemput_carter` DECIMAL(15,2) NOT NULL DEFAULT 0.00 AFTER `kode_group_carter`");
     }
-    setSystemSetting('schema_v351_carter_migrated', '1', 0);
+    updateSetting('schema_v351_carter_migrated', '1', null);
 }
 ?>
