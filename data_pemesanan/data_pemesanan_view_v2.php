@@ -658,12 +658,15 @@ if ($result) {
                           </button>
                         </div>
                       </div>
+                      <input type="hidden" name="kursi_list_json" id="kursi_list_json">
+                      <div id="seatMultiBadgeContainer" class="mt-1" style="display: none;"></div>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group mb-1">
-                      <label class="text-xs font-weight-bold text-muted mb-1" for="harga_id">Tarif / Harga Tiket (Rp) <span class="text-danger">*</span></label>
+                      <label class="text-xs font-weight-bold text-muted mb-1" for="harga_id">Tarif / Total Harga (Rp) <span class="text-danger">*</span></label>
                       <input type="number" class="form-control form-control-sm font-weight-bold" name="harga_id" id="harga_id" min="0" placeholder="Rp 0" required>
+                      <div id="hargaCalcContainer" class="mt-1 text-xs text-muted font-weight-bold" style="display: none;"></div>
                     </div>
                   </div>
                 </div>
@@ -818,6 +821,29 @@ if ($result) {
               <div class="text-right">
                 <span class="text-xs text-muted font-weight-bold d-block">Sisa Kursi:</span>
                 <span class="badge badge-success font-weight-bold px-2 py-1" id="pickerSisaBadge">0 Kosong</span>
+              </div>
+            </div>
+
+            <!-- Multi-seat selection controls -->
+            <div id="multiSeatControlPanel" class="p-2 mb-2 bg-light border rounded">
+              <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 6px;">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id="chkMultiSeat">
+                  <label class="custom-control-label font-weight-bold text-xs text-dark" for="chkMultiSeat" style="cursor: pointer;">
+                    <i class="fas fa-users text-primary mr-1"></i> Pilih Beberapa Kursi (Multi-Seat / Rombongan)
+                  </label>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-xs btn-outline-primary" id="btnSelectAllSeats" title="Pilih semua kursi kosong di armada ini">
+                    <i class="fas fa-check-double mr-1"></i> Carter 1 Unit
+                  </button>
+                  <button type="button" class="btn btn-xs btn-outline-secondary" id="btnResetSelectedSeats" title="Kosongkan pilihan kursi">
+                    <i class="fas fa-undo mr-1"></i> Reset
+                  </button>
+                </div>
+              </div>
+              <div class="text-xs text-muted mt-1" id="multiSeatHelp" style="font-size: 11px;">
+                <i class="fas fa-info-circle mr-1 text-info"></i> Centang opsi ini untuk memilih 3-4 kursi untuk 1 orang/rombongan, atau klik <strong>Carter 1 Unit</strong> untuk membooking seluruh armada.
               </div>
             </div>
 
@@ -1379,11 +1405,21 @@ if ($result) {
         var noPlat = document.getElementById('no_plat_id').value;
         if (noPlat === 'BELUM DITENTUKAN') {
           document.getElementById('kelas_id').value = 'BELUM DITENTUKAN';
-          if (!document.getElementById('harga_id').value || parseFloat(document.getElementById('harga_id').value) <= 0) {
-            document.getElementById('harga_id').value = '180000';
+          window.baseUnitPrice = 180000;
+          let count = (pickerSelectedSeats && pickerSelectedSeats.length > 0) ? pickerSelectedSeats.length : 1;
+          let total = window.baseUnitPrice * count;
+          document.getElementById('harga_id').value = total;
+          if ($('#single_amount').length && $('#payment_type').val() === 'single') {
+            $('#single_amount').val(total);
           }
-          if ($('#single_amount').length && (!$('#single_amount').val() || parseFloat($('#single_amount').val()) <= 0)) {
-            $('#single_amount').val('180000');
+          if (count > 1) {
+            $('#hargaCalcContainer').html(
+              '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
+              count + ' Kursi &times; Rp ' + Number(window.baseUnitPrice).toLocaleString('id-ID') + 
+              ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + '</span>'
+            ).show();
+          } else {
+            $('#hargaCalcContainer').hide().empty();
           }
           return;
         }
@@ -1393,19 +1429,40 @@ if ($result) {
             .then(data => {
               if (data && !data.error) {
                 document.getElementById('kelas_id').value = data.kelas || '';
-                document.getElementById('harga_id').value = data.harga || '';
+                window.baseUnitPrice = parseFloat(data.harga) || 0;
+                let count = (pickerSelectedSeats && pickerSelectedSeats.length > 0) ? pickerSelectedSeats.length : 1;
+                let total = window.baseUnitPrice > 0 ? (window.baseUnitPrice * count) : (data.harga || '');
+                document.getElementById('harga_id').value = total;
+                if ($('#single_amount').length && $('#payment_type').val() === 'single') {
+                  $('#single_amount').val(total);
+                }
+                if (count > 1 && window.baseUnitPrice > 0) {
+                  $('#hargaCalcContainer').html(
+                    '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
+                    count + ' Kursi &times; Rp ' + Number(window.baseUnitPrice).toLocaleString('id-ID') + 
+                    ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + '</span>'
+                  ).show();
+                } else {
+                  $('#hargaCalcContainer').hide().empty();
+                }
               } else {
                 document.getElementById('kelas_id').value = '';
                 document.getElementById('harga_id').value = '';
+                window.baseUnitPrice = 0;
+                $('#hargaCalcContainer').hide().empty();
               }
             })
             .catch(error => {
               document.getElementById('kelas_id').value = '';
               document.getElementById('harga_id').value = '';
+              window.baseUnitPrice = 0;
+              $('#hargaCalcContainer').hide().empty();
             });
         } else {
           document.getElementById('kelas_id').value = '';
           document.getElementById('harga_id').value = '';
+          window.baseUnitPrice = 0;
+          $('#hargaCalcContainer').hide().empty();
         }
       }
 
@@ -1532,6 +1589,9 @@ if ($result) {
 
         $('#btnSave').attr('name', 'edit').html('<i class="fas fa-save mr-1"></i> Update');
         $('#modalFormLabel').html('<i class="fas fa-edit mr-2"></i> Edit Pemesanan');
+        $('#multiSeatControlPanel').hide();
+        $('#seatMultiBadgeContainer').hide().empty();
+        $('#hargaCalcContainer').hide().empty();
         $('#modalForm').modal('show');
       });
 
@@ -1548,6 +1608,14 @@ if ($result) {
         $('#paymentMethodsContainer').empty();
         $('#btnSave').attr('name', 'tambah').html('<i class="fas fa-save mr-1"></i> Simpan');
         $('#modalFormLabel').html('<i class="fas fa-plus-circle mr-2"></i> Tambah Pemesanan');
+        pickerSelectedSeats = [];
+        window.baseUnitPrice = 0;
+        window.previousMultiCount = 0;
+        $('#kursi_list_json').val('');
+        $('#seatMultiBadgeContainer').hide().empty();
+        $('#hargaCalcContainer').hide().empty();
+        $('#chkMultiSeat').prop('checked', false);
+        $('#multiSeatControlPanel').show();
       });
 
       // Multiple Payment Method Functions
@@ -2511,9 +2579,9 @@ if ($result) {
       });
 
       /* ==========================================================
-         SEAT PICKER DENAH INTERAKTIF LOGIC
+         SEAT PICKER DENAH INTERAKTIF LOGIC (MULTI-SEAT & CARTER)
          ========================================================== */
-      let pickerSelectedSeat = null;
+      let pickerSelectedSeats = [];
       let pickerSeatsData = [];
 
       // Buka Modal Seat Picker
@@ -2547,7 +2615,29 @@ if ($result) {
         $('#pickerCabin').css('opacity', '0.3');
         $('#modalSeatPicker').modal('show');
 
-        pickerSelectedSeat = $('#kursi').val() ? parseInt($('#kursi').val()) : null;
+        // Mode check: if editing an existing ticket, hide multi-seat controls
+        let isEdit = ($('#btnSave').attr('name') === 'edit');
+        if (isEdit) {
+          $('#multiSeatControlPanel').hide();
+          $('#chkMultiSeat').prop('checked', false);
+        } else {
+          $('#multiSeatControlPanel').show();
+        }
+
+        // Parse existing kursi value
+        let currentKursi = $('#kursi').val().trim();
+        if (currentKursi) {
+          pickerSelectedSeats = currentKursi.split(',').map(function(s) {
+            return parseInt(s.trim());
+          }).filter(function(n) {
+            return !isNaN(n) && n > 0;
+          });
+          if (pickerSelectedSeats.length > 1) {
+            $('#chkMultiSeat').prop('checked', true);
+          }
+        } else {
+          pickerSelectedSeats = [];
+        }
         updatePickerSelectionLabel();
 
         $.ajax({
@@ -2628,18 +2718,78 @@ if ($result) {
             return;
           }
 
-          pickerSelectedSeat = num;
-          $('.picker-seat-box').removeClass('seat-selected');
-          $(this).addClass('seat-selected');
+          let isMulti = $('#chkMultiSeat').is(':checked');
+          if (!isMulti) {
+            // Single seat mode
+            pickerSelectedSeats = [num];
+            $('.picker-seat-box').removeClass('seat-selected');
+            $(this).addClass('seat-selected');
+          } else {
+            // Multi-seat toggle mode
+            let idx = pickerSelectedSeats.indexOf(num);
+            if (idx !== -1) {
+              pickerSelectedSeats.splice(idx, 1);
+              $(this).removeClass('seat-selected');
+            } else {
+              pickerSelectedSeats.push(num);
+              pickerSelectedSeats.sort(function(a, b) { return a - b; });
+              $(this).addClass('seat-selected');
+            }
+          }
           updatePickerSelectionLabel();
         });
       }
+
+      // Checkbox multi-seat toggle handler
+      $('#chkMultiSeat').off('change').on('change', function() {
+        let isMulti = $(this).is(':checked');
+        if (!isMulti && pickerSelectedSeats.length > 1) {
+          // Keep only the first selected seat
+          let firstSeat = pickerSelectedSeats[0];
+          pickerSelectedSeats = [firstSeat];
+          $('.picker-seat-box').removeClass('seat-selected');
+          $('.picker-seat-box[data-nomor="' + firstSeat + '"]').addClass('seat-selected');
+          updatePickerSelectionLabel();
+        }
+      });
+
+      // Tombol Carter 1 Unit (Pilih Semua Kursi Kosong)
+      $('#btnSelectAllSeats').off('click').on('click', function() {
+        let availableSeats = [];
+        $('.picker-seat-box').each(function() {
+          let num = $(this).data('nomor');
+          let status = $(this).data('status');
+          if (status === 'available') {
+            availableSeats.push(parseInt(num));
+          }
+        });
+
+        if (availableSeats.length === 0) {
+          alert('Maaf, tidak ada kursi kosong yang tersedia pada armada ini.');
+          return;
+        }
+
+        $('#chkMultiSeat').prop('checked', true);
+        pickerSelectedSeats = availableSeats.sort(function(a, b) { return a - b; });
+        $('.picker-seat-box').removeClass('seat-selected');
+        pickerSelectedSeats.forEach(function(num) {
+          $('.picker-seat-box[data-nomor="' + num + '"]').addClass('seat-selected');
+        });
+        updatePickerSelectionLabel();
+      });
+
+      // Tombol Reset Pilihan Kursi
+      $('#btnResetSelectedSeats').off('click').on('click', function() {
+        pickerSelectedSeats = [];
+        $('.picker-seat-box').removeClass('seat-selected');
+        updatePickerSelectionLabel();
+      });
 
       function renderPickerBox(seatObj) {
         if (!seatObj) return '<div class="seat-box" style="visibility:hidden;"></div>';
         let num = seatObj.nomor;
         let status = seatObj.status;
-        let isSelected = (pickerSelectedSeat === num);
+        let isSelected = (pickerSelectedSeats.indexOf(num) !== -1);
         let cls = 'seat-available picker-seat-box';
         let icon = 'fa-chair';
         let label = 'Kosong';
@@ -2666,22 +2816,103 @@ if ($result) {
       }
 
       function updatePickerSelectionLabel() {
-        if (pickerSelectedSeat) {
-          $('#pickerSelectedLabel').text('Kursi #' + pickerSelectedSeat);
+        let count = pickerSelectedSeats.length;
+        let totalAvail = $('.picker-seat-box[data-status="available"]').length;
+
+        if (count === 0) {
+          $('#pickerSelectedLabel').html('<span class="text-muted font-italic">Belum Dipilih</span>');
+          $('#btnConfirmSeatSelection').html('<i class="fas fa-check mr-1"></i> Konfirmasi Kursi');
+        } else if (count === 1) {
+          $('#pickerSelectedLabel').html('Kursi #' + pickerSelectedSeats[0]);
+          $('#btnConfirmSeatSelection').html('<i class="fas fa-check mr-1"></i> Konfirmasi 1 Kursi');
         } else {
-          $('#pickerSelectedLabel').text('Belum Dipilih');
+          let isCarter = (count > 1 && totalAvail > 0 && count === totalAvail);
+          let tag = isCarter ? ' <span class="badge badge-warning text-dark ml-1 font-weight-bold"><i class="fas fa-bus mr-1"></i>Carter 1 Unit</span>' : ' <span class="badge badge-primary ml-1 font-weight-bold">' + count + ' Kursi</span>';
+          $('#pickerSelectedLabel').html('Kursi: ' + pickerSelectedSeats.join(', ') + tag);
+          $('#btnConfirmSeatSelection').html('<i class="fas fa-check mr-1"></i> Konfirmasi ' + count + ' Kursi' + (isCarter ? ' (Carter)' : ''));
         }
       }
 
       // Konfirmasi Pilihan Kursi
       $('#btnConfirmSeatSelection').on('click', function() {
-        if (!pickerSelectedSeat) {
-          alert('Silakan klik salah satu kursi kosong (berwarna hijau) pada denah!');
+        if (!pickerSelectedSeats || pickerSelectedSeats.length === 0) {
+          alert('Silakan klik minimal satu kursi kosong (berwarna hijau) pada denah!');
           return;
         }
 
-        $('#kursi').val(pickerSelectedSeat);
+        let count = pickerSelectedSeats.length;
+        let seatStr = pickerSelectedSeats.join(', ');
+        $('#kursi').val(seatStr);
+        $('#kursi_list_json').val(JSON.stringify(pickerSelectedSeats));
+
+        let totalAvail = $('.picker-seat-box[data-status="available"]').length;
+        let isCarter = (count > 1 && totalAvail > 0 && count === totalAvail);
+
+        // Tampilkan badge indikator di form input kursi
+        if (count > 1) {
+          let badgeHtml = '<span class="badge badge-primary mr-1 font-weight-bold"><i class="fas fa-users mr-1"></i>' + count + ' Kursi Dipilih</span>';
+          if (isCarter) {
+            badgeHtml += '<span class="badge badge-warning text-dark font-weight-bold"><i class="fas fa-bus mr-1"></i>Carter 1 Unit</span>';
+          }
+          $('#seatMultiBadgeContainer').html(badgeHtml).show();
+        } else {
+          $('#seatMultiBadgeContainer').hide().empty();
+        }
+
+        // Kalkulasi tarif otomatis jika baseUnitPrice tersedia
+        let basePrice = window.baseUnitPrice || 0;
+        if (!basePrice) {
+          let currentTotal = parseFloat($('#harga_id').val()) || 0;
+          if (currentTotal > 0 && count > 1 && !window.previousMultiCount) {
+            basePrice = currentTotal;
+            window.baseUnitPrice = basePrice;
+          }
+        }
+
+        if (basePrice > 0 && count > 0) {
+          let totalHarga = basePrice * count;
+          $('#harga_id').val(totalHarga).trigger('change');
+          if (count > 1) {
+            $('#hargaCalcContainer').html(
+              '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
+              count + ' Kursi &times; Rp ' + Number(basePrice).toLocaleString('id-ID') + 
+              ' = <span class="text-success font-weight-bold">Rp ' + Number(totalHarga).toLocaleString('id-ID') + '</span>'
+            ).show();
+          } else {
+            $('#hargaCalcContainer').hide().empty();
+          }
+        }
+        window.previousMultiCount = count;
+
         $('#modalSeatPicker').modal('hide');
+      });
+
+      // Sinkronisasi manual jika user mengetik koma pada kursi
+      $('#kursi').on('blur', function() {
+        let val = $(this).val().trim();
+        if (val.indexOf(',') !== -1) {
+          let seats = val.split(',').map(function(s) {
+            return parseInt(s.trim());
+          }).filter(function(n) {
+            return !isNaN(n) && n > 0;
+          });
+          if (seats.length > 1) {
+            pickerSelectedSeats = seats;
+            $('#kursi_list_json').val(JSON.stringify(seats));
+            $('#seatMultiBadgeContainer').html(
+              '<span class="badge badge-primary font-weight-bold"><i class="fas fa-users mr-1"></i>' + seats.length + ' Kursi Dipilih</span>'
+            ).show();
+            if (window.baseUnitPrice && window.baseUnitPrice > 0) {
+              let total = window.baseUnitPrice * seats.length;
+              $('#harga_id').val(total).trigger('change');
+              $('#hargaCalcContainer').html(
+                '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
+                seats.length + ' Kursi &times; Rp ' + Number(window.baseUnitPrice).toLocaleString('id-ID') + 
+                ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + '</span>'
+              ).show();
+            }
+          }
+        }
       });
 
       // Handle auto-open dari Kontrol Kursi jika URL memiliki parameter action=new

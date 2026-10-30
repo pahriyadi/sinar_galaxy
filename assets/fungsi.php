@@ -576,6 +576,89 @@ function getPelangganById($id) {
 // CRUD Data Pemesanan
 function tambahPemesanan($data) {
     global $conn;
+
+    // Deteksi jika pemesanan multi-kursi (rombongan / carter 1 unit armada)
+    $seats = [];
+    if (!empty($data['kursi_list_json'])) {
+        $decoded = json_decode($data['kursi_list_json'], true);
+        if (is_array($decoded)) {
+            foreach ($decoded as $s) {
+                $num = (int)$s;
+                if ($num > 0 && !in_array($num, $seats)) $seats[] = $num;
+            }
+        }
+    }
+    if (empty($seats) && isset($data['kursi'])) {
+        if (is_array($data['kursi'])) {
+            foreach ($data['kursi'] as $s) {
+                $num = (int)$s;
+                if ($num > 0 && !in_array($num, $seats)) $seats[] = $num;
+            }
+        } elseif (is_string($data['kursi']) && strpos($data['kursi'], ',') !== false) {
+            $parts = explode(',', $data['kursi']);
+            foreach ($parts as $s) {
+                $num = (int)trim($s);
+                if ($num > 0 && !in_array($num, $seats)) $seats[] = $num;
+            }
+        }
+    }
+
+    // Jika lebih dari 1 kursi, lakukan insert untuk setiap kursi
+    if (count($seats) > 1) {
+        sort($seats);
+        $seatCount = count($seats);
+        $totalHarga = isset($data['harga_id']) ? (float)$data['harga_id'] : 0;
+        $hargaPerKursi = floor($totalHarga / $seatCount);
+        $sisaHarga = $totalHarga - ($hargaPerKursi * $seatCount);
+
+        $ketAsli = isset($data['keterangan']) ? trim($data['keterangan']) : '';
+        $seatListStr = implode(', ', $seats);
+        $isCarter = ($seatCount >= 9);
+        $tagMulti = $isCarter ? "[Carter 1 Unit: $seatCount Kursi ($seatListStr)]" : "[Pemesanan Rombongan: $seatCount Kursi ($seatListStr)]";
+
+        $originalPaymentMethods = isset($data['payment_methods']) && is_array($data['payment_methods']) ? $data['payment_methods'] : null;
+
+        $firstInsertId = null;
+        foreach ($seats as $idx => $seatNum) {
+            $seatData = $data;
+            $seatData['kursi'] = $seatNum;
+            // Alokasikan harga: selisih pembagian diberikan ke baris pertama
+            $seatData['harga_id'] = ($idx === 0) ? ($hargaPerKursi + $sisaHarga) : $hargaPerKursi;
+            $seatData['keterangan'] = !empty($ketAsli) ? ($ketAsli . ' ' . $tagMulti) : $tagMulti;
+            unset($seatData['kursi_list_json']);
+
+            // Alokasikan pembayaran berganda secara proporsional jika ada
+            if ($originalPaymentMethods) {
+                $proportionalMethods = [];
+                foreach ($originalPaymentMethods as $pm) {
+                    $amtTotal = (float)($pm['amount'] ?? 0);
+                    $amtPerSeat = floor($amtTotal / $seatCount);
+                    $amtSisa = $amtTotal - ($amtPerSeat * $seatCount);
+                    $proportionalMethods[] = [
+                        'method_id' => $pm['method_id'] ?? '',
+                        'amount' => ($idx === 0) ? ($amtPerSeat + $amtSisa) : $amtPerSeat,
+                        'rekening_id' => $pm['rekening_id'] ?? '',
+                        'payment_date' => $pm['payment_date'] ?? ''
+                    ];
+                }
+                $seatData['payment_methods'] = $proportionalMethods;
+            }
+
+            $insId = _insertSinglePemesanan($seatData);
+            if ($firstInsertId === null && $insId) {
+                $firstInsertId = $insId;
+            }
+        }
+
+        return $firstInsertId;
+    }
+
+    // Single seat booking standard
+    return _insertSinglePemesanan($data);
+}
+
+function _insertSinglePemesanan($data) {
+    global $conn;
     $nip_sgt_id = isset($data['nip_sgt_id']) ? mysqli_real_escape_string($conn, $data['nip_sgt_id']) : '';
     $nama_id = isset($data['nama_id']) ? mysqli_real_escape_string($conn, $data['nama_id']) : '';
     $alamat_id = isset($data['alamat_id']) ? mysqli_real_escape_string($conn, $data['alamat_id']) : '';
