@@ -22,7 +22,7 @@ if (!empty($row['payment_methods']) && json_validate($row['payment_methods'])) {
 }
 if (!is_array($payment_methods)) $payment_methods = [];
 
-$harga = (float)$row['harga_id'];
+$harga = (float)$row['harga_id'] + (float)($row['biaya_jemput_carter'] ?? 0);
 $totalPaid = 0;
 foreach ($payment_methods as $p) {
   $totalPaid += (float)($p['amount'] ?? 0);

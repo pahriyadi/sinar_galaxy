@@ -4,6 +4,12 @@ require_once '../assets/session.php';
 require_once '../assets/fungsi.php';
 require_once '../inc/koneksi.php';
 
+// Auto-ensure kolom biaya_jemput_carter tersedia di tabel data_travel
+$chkCol = mysqli_query($conn, "SHOW COLUMNS FROM data_travel LIKE 'biaya_jemput_carter'");
+if ($chkCol && mysqli_num_rows($chkCol) === 0) {
+    mysqli_query($conn, "ALTER TABLE data_travel ADD COLUMN biaya_jemput_carter DECIMAL(15,2) NOT NULL DEFAULT 150000.00 AFTER harga");
+}
+
 // Ambil data user dari session (SEBELUM HTML output)
 $user = $_SESSION['user'] ?? [];
 $asal_po = $user['asal_po'] ?? 'Sumbawa';
@@ -61,7 +67,7 @@ require_once '../inc/navbar.php';
             <div>
               <h1 class="m-0 text-dark" style="font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px;">Data Armada Kendaraan Travel</h1>
               <div class="text-muted" style="font-size: 0.83rem;">
-                <span>Manajemen unit mobil travel, kapasitas tempat duduk, dan tarif standar tiket</span>
+                <span>Manajemen unit mobil travel, kapasitas tempat duduk, tarif tiket &amp; biaya jemput/antar carter</span>
                 <span class="mx-1">•</span>
                 <span class="badge" style="background: #e6f4ea; color: #076e34; border: 1px solid #b7e1cd; font-weight: 600;">
                   <i class="fas fa-building mr-1"></i><?= $role === 'super admin' ? 'Seluruh Cabang PO' : 'PO ' . htmlspecialchars($asal_po) ?>
@@ -175,12 +181,15 @@ require_once '../inc/navbar.php';
                 <th style="padding: 10px 12px; border: 1px solid #b8b8b8; font-weight: 600; color: #202124;">No. Plat Nomor</th>
                 <th style="padding: 10px 12px; border: 1px solid #b8b8b8; font-weight: 600; color: #202124;">Kelas Layanan</th>
                 <th style="padding: 10px 12px; border: 1px solid #b8b8b8; text-align: right; font-weight: 600; color: #202124;">Tarif Tiket (Rp)</th>
+                <th style="padding: 10px 12px; border: 1px solid #b8b8b8; text-align: right; font-weight: 600; color: #202124;">Biaya Jemput/Antar Carter (Rp)</th>
                 <th style="padding: 10px 8px; border: 1px solid #b8b8b8; text-align: center; width: 110px; font-weight: 600; color: #202124;">Jumlah Kursi</th>
                 <th style="padding: 10px 8px; border: 1px solid #b8b8b8; text-align: center; width: 110px; font-weight: 600; color: #202124;">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($armada_list as $r): ?>
+              <?php foreach ($armada_list as $r): 
+                $biayaCarter = isset($r['biaya_jemput_carter']) ? (float)$r['biaya_jemput_carter'] : 150000;
+              ?>
               <tr>
                 <td style="padding: 8px; border: 1px solid #b8b8b8; text-align: center; font-weight: 600; color: #5f6368;"><?= $r['id_travel']; ?></td>
                 <td style="padding: 8px 12px; border: 1px solid #b8b8b8; font-weight: 700; color: #202124;">
@@ -195,6 +204,10 @@ require_once '../inc/navbar.php';
                 </td>
                 <td style="padding: 8px 12px; border: 1px solid #b8b8b8; text-align: right; font-weight: 700; color: #0d9f4f; font-family: monospace; font-size: 0.95rem;">
                   Rp <?= number_format($r['harga'], 0, ',', '.'); ?>
+                </td>
+                <td style="padding: 8px 12px; border: 1px solid #b8b8b8; text-align: right; font-weight: 700; color: #b45309; font-family: monospace; font-size: 0.95rem;">
+                  Rp <?= number_format($biayaCarter, 0, ',', '.'); ?>
+                  <span class="d-block text-muted" style="font-size: 10px; font-family: sans-serif; font-weight: normal;">(Internal Carter)</span>
                 </td>
                 <td style="padding: 8px; border: 1px solid #b8b8b8; text-align: center; font-weight: 600; color: #202124;">
                   <span class="badge" style="background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.82rem; padding: 4px 8px;">
@@ -254,19 +267,31 @@ require_once '../inc/navbar.php';
             </div>
             <div class="row">
               <div class="col-md-6">
-                <div class="form-group mb-0">
+                <div class="form-group mb-3">
                   <label for="harga" class="font-weight-bold text-dark" style="font-size: 0.85rem;">
-                    Tarif Dasar Tiket (Rp) <span class="text-danger">*</span>
+                    Tarif Dasar Tiket / Kursi (Rp) <span class="text-danger">*</span>
                   </label>
-                  <input type="number" class="form-control form-control-sm font-weight-bold" name="harga" id="harga" placeholder="Contoh: 150000" required style="border: 1px solid #b8b8b8; border-radius: 4px; color: #0d9f4f;">
+                  <input type="number" class="form-control form-control-sm font-weight-bold" name="harga" id="harga" placeholder="Contoh: 180000" required style="border: 1px solid #b8b8b8; border-radius: 4px; color: #0d9f4f;">
+                  <small class="text-muted" style="font-size: 11px;">Tampil di E-Tiket Penumpang</small>
                 </div>
               </div>
               <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="biaya_jemput_carter" class="font-weight-bold text-dark" style="font-size: 0.85rem;">
+                    Biaya Jemput / Antar Carter (Rp) <span class="text-danger">*</span>
+                  </label>
+                  <input type="number" class="form-control form-control-sm font-weight-bold" name="biaya_jemput_carter" id="biaya_jemput_carter" value="150000" placeholder="Contoh: 150000" required style="border: 1px solid #b8b8b8; border-radius: 4px; color: #b45309;">
+                  <small class="text-muted" style="font-size: 11px;">Pendapatan internal carter (tidak masuk E-Tiket)</small>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
                 <div class="form-group mb-0">
                   <label for="jumlah_kursi" class="font-weight-bold text-dark" style="font-size: 0.85rem;">
                     Kapasitas Kursi <span class="text-danger">*</span>
                   </label>
-                  <input type="number" class="form-control form-control-sm" name="jumlah_kursi" id="jumlah_kursi" placeholder="Contoh: 7" required style="border: 1px solid #b8b8b8; border-radius: 4px;">
+                  <input type="number" class="form-control form-control-sm" name="jumlah_kursi" id="jumlah_kursi" placeholder="Contoh: 10" required style="border: 1px solid #b8b8b8; border-radius: 4px;">
                 </div>
               </div>
             </div>

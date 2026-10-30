@@ -231,7 +231,7 @@ if ($result) {
             '<span class="badge badge-warning">' . htmlspecialchars($row['tanggal_berangkat'] ?? '') . '</span>',
             '<span class="badge badge-dark">' . htmlspecialchars($row['no_plat_id'] ?? '') . '</span>',
             '<span class="badge badge-info">' . htmlspecialchars($row['kelas_id'] ?? '') . '</span>',
-            '<strong class="text-success">Rp ' . number_format($row['harga_id'] ?? 0) . '</strong>',
+            '<strong class="text-success">Rp ' . number_format($row['harga_id'] ?? 0) . '</strong>' . (!empty($row['biaya_jemput_carter']) && (float)$row['biaya_jemput_carter'] > 0 ? '<br><span class="badge badge-warning text-dark mt-1" style="font-size:10px;" title="Catatan Pendapatan Internal Jemput/Antar Carter (Tidak masuk E-Tiket)"><i class="fas fa-shuttle-van mr-1"></i>+Jemput: Rp ' . number_format((float)$row['biaya_jemput_carter']) . '</span>' : ''),
             '<span class="badge badge-info">' . htmlspecialchars($row['kursi'] ?? '') . '</span>',
             '<span class="badge badge-success">' . htmlspecialchars($tujuanText) . '</span>',
             '<span class="badge ' . $status_class . '">' . htmlspecialchars($statusText) . '</span>',

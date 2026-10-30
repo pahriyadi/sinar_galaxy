@@ -114,7 +114,7 @@ $sql_pemesanan = "SELECT
     pm.tanggal_berangkat,
     pm.no_plat_id,
     pm.kelas_id,
-    pm.harga_id,
+    (pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as harga_id,
     pm.kursi,
     pm.tujuan_id,
     pm.status_pembayaran_id,

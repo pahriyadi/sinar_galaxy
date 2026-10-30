@@ -49,6 +49,64 @@ if ($id_pemesanan > 0) {
         if ($res && mysqli_num_rows($res) > 0) {
             $ticket = mysqli_fetch_assoc($res);
             $isValid = true;
+
+            // Deteksi Carter 1 Unit & Mode Tampilan E-Tiket (Default: 'single' / Perorangan, Opsi Tombol: 'carter' / Gabungan)
+            $mode_etiket = isset($_GET['mode']) ? strtolower(trim($_GET['mode'])) : 'single';
+            $hasCarterDetected = false;
+            $carterTotalSeatsCount = 0;
+            $urlModeCarter = '';
+            $urlModeSingle = '';
+
+            if (!empty($ticket['keterangan'])) {
+                $ticket['keterangan'] = preg_replace('/\s*\|\s*\+Jemput\/Antar Internal:[^\]]*/i', '', $ticket['keterangan']);
+            }
+
+            $kodeCarter = trim($ticket['kode_group_carter'] ?? '');
+            $ketStr = $ticket['keterangan'] ?? '';
+            $isCarterRow = (strpos($kodeCarter, 'CRT-') === 0) || (stripos($ketStr, '[Carter 1 Unit') !== false);
+            if ($isCarterRow) {
+                $hasCarterDetected = true;
+                if (!empty($kodeCarter)) {
+                    $kcEsc = mysqli_real_escape_string($conn, $kodeCarter);
+                    $whereGroup = "pm.kode_group_carter = '$kcEsc'";
+                } else {
+                    $pEsc = mysqli_real_escape_string($conn, $ticket['no_plat_id']);
+                    $tbEsc = mysqli_real_escape_string($conn, $ticket['tanggal_berangkat']);
+                    $nmEsc = mysqli_real_escape_string($conn, $ticket['nama_id']);
+                    $whereGroup = "pm.no_plat_id = '$pEsc' AND pm.tanggal_berangkat = '$tbEsc' AND pm.nama_id = '$nmEsc' AND pm.keterangan LIKE '%[Carter 1 Unit%'";
+                }
+                $resG = mysqli_query($conn, "SELECT id_pemesanan, kursi, harga_id FROM data_pemesanan pm WHERE $whereGroup ORDER BY pm.kursi ASC, pm.id_pemesanan ASC");
+                $carterTotalSeatsCount = $resG ? mysqli_num_rows($resG) : 0;
+
+                $qParams = $_GET;
+                $qParams['mode'] = 'carter';
+                $urlModeCarter = '?' . http_build_query($qParams);
+                $qParams['mode'] = 'single';
+                $urlModeSingle = '?' . http_build_query($qParams);
+
+                if ($mode_etiket === 'carter' && $carterTotalSeatsCount > 1) {
+                    $seatNums = [];
+                    $totalHargaMurni = 0;
+                    $firstId = null;
+                    $hargaSatuan = 0;
+                    while ($gr = mysqli_fetch_assoc($resG)) {
+                        if ($firstId === null) {
+                            $firstId = (int)$gr['id_pemesanan'];
+                            $hargaSatuan = (float)$gr['harga_id'];
+                        }
+                        $seatNums[] = (int)$gr['kursi'];
+                        $totalHargaMurni += (float)$gr['harga_id'];
+                    }
+                    sort($seatNums);
+                    $jmlKursiCarter = count($seatNums);
+                    $ticket['id_pemesanan'] = $firstId;
+                    $ticket['kursi'] = implode(', ', $seatNums) . ' (CARTER ' . $jmlKursiCarter . ' KURSI)';
+                    $ticket['harga_id'] = $totalHargaMurni;
+                    $ticket['harga_satuan_carter'] = $hargaSatuan;
+                    $ticket['jumlah_kursi_carter'] = $jmlKursiCarter;
+                    $ticket['is_carter_merged'] = true;
+                }
+            }
         }
     }
 }
@@ -1207,6 +1265,17 @@ if ($isValid && $ticket) {
       </div>
 
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <?php if (!empty($hasCarterDetected)): ?>
+          <?php if (($mode_etiket ?? 'single') === 'carter'): ?>
+            <a href="<?= htmlspecialchars($urlModeSingle) ?>" class="btn-action" style="background: #0f766e; color: #ffffff; text-decoration: none;">
+              <i class="fas fa-user"></i> E-Tiket Perorangan
+            </a>
+          <?php else: ?>
+            <a href="<?= htmlspecialchars($urlModeCarter) ?>" class="btn-action" style="background: #7c3aed; color: #ffffff; text-decoration: none;">
+              <i class="fas fa-layer-group"></i> E-Tiket Gabungan Carter<?= !empty($carterTotalSeatsCount) ? ' (' . $carterTotalSeatsCount . ' Kursi)' : '' ?>
+            </a>
+          <?php endif; ?>
+        <?php endif; ?>
         <span class="badge-verified">
           <i class="fas fa-check-circle"></i> TIKET RESMI & LUNAS
         </span>

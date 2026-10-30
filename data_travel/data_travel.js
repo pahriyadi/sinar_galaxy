@@ -25,6 +25,7 @@ $(function () {
       $('#no_plat').val(obj.no_plat);
       $('#kelas').val(obj.kelas);
       $('#harga').val(obj.harga);
+      $('#biaya_jemput_carter').val(obj.biaya_jemput_carter !== undefined ? obj.biaya_jemput_carter : 150000);
       $('#jumlah_kursi').val(obj.jumlah_kursi);
       $('#btnSave').attr('name', 'edit').text('Update');
       $('#modalFormLabel').text('Edit Travel');
@@ -49,6 +50,7 @@ $(function () {
 
   $('#modalForm').on('hidden.bs.modal', function () {
     $('#formTravel')[0].reset();
+    $('#biaya_jemput_carter').val(150000);
     $('#btnSave').attr('name', 'tambah').text('Simpan');
     $('#modalFormLabel').text('Tambah Travel');
   });

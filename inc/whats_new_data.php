@@ -9,9 +9,9 @@
 
 $releases = [
     [
-        'version' => 'v3.5.0',
+        'version' => 'v3.5.1',
         'release_date' => '30 Oktober 2026',
-        'title' => 'Pemesanan Rombongan Multi-Kursi & Carter 1 Unit Armada',
+        'title' => 'Pemesanan Multi-Kursi, Carter 1 Unit, E-Tiket Gabungan & Sinkronisasi Laporan Real',
         'badge' => 'Rilis Terbaru',
         'badge_class' => 'badge-success',
         'is_latest' => true,
@@ -20,29 +20,36 @@ $releases = [
                 'category' => 'Pemesanan Tiket',
                 'badge_color' => 'success',
                 'icon' => 'fas fa-users',
-                'title' => 'Pemesanan Rombongan Multi-Kursi (3-4 Kursi Sekaligus)',
-                'desc' => 'Kini kasir/admin dapat memilih beberapa kursi sekaligus untuk satu nama penumpang dalam satu transaksi dari denah interaktif. Tersedia checkbox opsi rombongan dengan visualisasi nomor kursi terpilih yang rapi dan informatif.'
+                'title' => 'Pemesanan Rombongan Multi-Kursi & Tombol 1-Klik "Carter 1 Unit"',
+                'desc' => 'Kasir/admin kini dapat memilih beberapa kursi sekaligus (3-4 kursi) melalui checkbox multi-seat atau klik tombol "Carter 1 Unit" pada denah interaktif untuk membooking seluruh kursi kosong secara otomatis.'
             ],
             [
-                'category' => 'Carter Armada',
+                'category' => 'E-Tiket Carter',
                 'badge_color' => 'primary',
-                'icon' => 'fas fa-bus-alt',
-                'title' => 'Tombol 1-Klik "Carter 1 Unit" (Booking Seluruh Armada)',
-                'desc' => 'Memudahkan pemesanan carter seluruh armada. Cukup klik tombol "Carter 1 Unit" pada denah, sistem akan langsung menandai dan memilih semua kursi kosong yang tersedia secara otomatis.'
+                'icon' => 'fas fa-layer-group',
+                'title' => 'E-Tiket Perorangan Default + Tombol Switch "E-Tiket Gabungan Carter"',
+                'desc' => 'Saat E-Tiket dibuka, tampilan tetap menampilkan E-Tiket Perorangan (per kursi). Jika sistem mendeteksi pesanan Carter 1 Unit, otomatis tersedia tombol "E-Tiket Gabungan Carter" untuk menggabungkan seluruh kursi dan menjumlahkan harga tiket murni dalam 1 lembar tiket.'
             ],
             [
-                'category' => 'Kalkulasi Otomatis',
+                'category' => 'Pendapatan Internal',
+                'badge_color' => 'warning',
+                'icon' => 'fas fa-shuttle-van',
+                'title' => 'Tarif Jemput / Antar Carter Dinamis (Master Armada & Kasir)',
+                'desc' => 'Pengaturan Biaya Jemput/Antar Carter (default Rp 150.000) kini terhubung langsung dari Master Data Armada ke form pemesanan. Fleksibel disesuaikan kasir dan dicatat khusus sebagai pendapatan internal tanpa ditampilkan di dalam E-Tiket penumpang.'
+            ],
+            [
+                'category' => 'Laporan Real-Time',
                 'badge_color' => 'info',
-                'icon' => 'fas fa-calculator',
-                'title' => 'Perhitungan Tarif Otomatis & Sinkronisasi Kasir Real-Time',
-                'desc' => 'Total biaya dihitung secara instan (Tarif × Jumlah Kursi) dan disinkronkan langsung ke nominal metode pembayaran kasir. Dilengkapi rincian kalkulasi harga interaktif di bawah kolom tarif.'
+                'icon' => 'fas fa-file-invoice-dollar',
+                'title' => 'Sinkronisasi Penuh Seluruh Laporan & Dashboard (100% Real)',
+                'desc' => 'Seluruh transaksi tiket maupun biaya jemput/antar internal carter otomatis masuk secara riil dan akurat ke Dashboard Eksekutif, Manifes Keberangkatan, Jurnal Keuangan, Rekap Keuangan, serta seluruh Laporan Pendapatan (Armada, Rute, Bank, & Kasir).'
             ],
             [
                 'category' => 'Integritas Data',
                 'badge_color' => 'secondary',
                 'icon' => 'fas fa-database',
                 'title' => 'Integritas Kursi Terpisah & Alokasi Pembayaran Presisi',
-                'desc' => 'Pemesanan rombongan otomatis dipecah menjadi data kursi individual di database dengan label rombongan/carter. Menjaga akurasi denah kursi real-time, manifes keberangkatan supir, e-tiket, serta alokasi pembayaran rupiah presisi.'
+                'desc' => 'Pemesanan multi-kursi & carter dipecah menjadi baris kursi individual berlabel grup di database. Menjaga akurasi denah kursi real-time, manifes supir, serta alokasi metode pembayaran hingga presisi Rp 1.'
             ]
         ]
     ],

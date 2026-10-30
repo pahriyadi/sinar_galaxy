@@ -80,7 +80,7 @@ if ($tglDari && $tglSampai && $rekeningId && !$errors) {
   $end = date('Y-m-d', strtotime($tglSampai));
 
   // 1) Transaksi masuk dari Pemesanan (payment_methods JSON atau single)
-  $sqlPm = "SELECT id_pemesanan, nama_id, tanggal_pemesanan, harga_id, jenis_rekening_id, payment_methods FROM data_pemesanan ";
+  $sqlPm = "SELECT id_pemesanan, nama_id, tanggal_pemesanan, (harga_id + COALESCE(biaya_jemput_carter, 0)) as harga_id, COALESCE(biaya_jemput_carter, 0) as biaya_jemput_carter, kursi, jenis_rekening_id, payment_methods FROM data_pemesanan ";
   // batasi kandidat menggunakan LIKE untuk efisiensi kasar
   $like = '%"rekening_id":' . $rekeningId . '%';
   $stmtPm = $conn->prepare($sqlPm . "WHERE (payment_methods LIKE ? OR jenis_rekening_id = ?) ");
@@ -100,7 +100,7 @@ if ($tglDari && $tglSampai && $rekeningId && !$errors) {
           if ($rek === $rekeningId && $payDate && $payDate >= $start && $payDate <= $end && $amt > 0) {
             $entries[] = [
               'date' => $payDate . ' 12:00:00',
-              'uraian' => 'terima - pemesanan dari ' . $nama,
+              'uraian' => 'terima - pemesanan dari ' . $nama . (!empty($row['biaya_jemput_carter']) && (float)$row['biaya_jemput_carter'] > 0 ? ' (Termasuk Jemput/Antar Carter Rp ' . number_format((float)$row['biaya_jemput_carter'], 0, ',', '.') . ')' : ''),
               'debit' => $amt,
               'kredit' => 0,
             ];
@@ -117,7 +117,7 @@ if ($tglDari && $tglSampai && $rekeningId && !$errors) {
           if ($amt > 0) {
             $entries[] = [
               'date' => $payDate . ' 12:00:00',
-              'uraian' => 'terima - pemesanan dari ' . $nama,
+              'uraian' => 'terima - pemesanan dari ' . $nama . (!empty($row['biaya_jemput_carter']) && (float)$row['biaya_jemput_carter'] > 0 ? ' (Termasuk Jemput/Antar Carter Rp ' . number_format((float)$row['biaya_jemput_carter'], 0, ',', '.') . ')' : ''),
               'debit' => $amt,
               'kredit' => 0,
             ];

@@ -54,7 +54,7 @@ foreach ($all_tujuan as $id => $nama) {
 }
 
 // Pemesanan
-$sql_tujuan_pemesanan = "SELECT p.tujuan_id, SUM(p.harga_id) as total FROM data_pemesanan p 
+$sql_tujuan_pemesanan = "SELECT p.tujuan_id, SUM(p.harga_id + COALESCE(p.biaya_jemput_carter, 0)) as total FROM data_pemesanan p 
                          WHERE p.status_pembayaran_id IN (SELECT id_status_pembayaran FROM data_status_pembayaran WHERE status_pembayaran = 'Lunas') 
                          AND $whereBulanTahunPemesanan GROUP BY p.tujuan_id";
 $res_tujuan_pemesanan = $conn->query($sql_tujuan_pemesanan);
@@ -119,7 +119,7 @@ if ($role !== 'super admin') {
 }
 
 // --- Pemesanan
-$sqlPemJson = "SELECT pm.tujuan_id, pm.payment_methods, pm.harga_id, pm.tanggal_pemesanan
+$sqlPemJson = "SELECT pm.tujuan_id, pm.payment_methods, (pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as harga_id, pm.tanggal_pemesanan
                FROM data_pemesanan pm $whereRolePem";
 $resJson = $conn->query($sqlPemJson);
 if($resJson){

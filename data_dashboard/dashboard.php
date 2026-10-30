@@ -91,7 +91,7 @@ $wherePem = ' WHERE 1=1';
 if ($role === 'admin' || $role === 'users') {
     $wherePem .= " AND (username = '".intval($idUsers)."' OR asal_po = '".intval($idUsers)."')";
 }
-$sqlPem = "SELECT id_pemesanan, nama_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, no_plat_id, tujuan_id, harga_id, jenis_rekening_id, username, payment_methods, status_pembayaran_id FROM data_pemesanan" . $wherePem;
+$sqlPem = "SELECT id_pemesanan, nama_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, no_plat_id, tujuan_id, (harga_id + COALESCE(biaya_jemput_carter, 0)) as harga_id, jenis_rekening_id, username, payment_methods, status_pembayaran_id FROM data_pemesanan" . $wherePem;
 $rsPem = $conn->query($sqlPem);
 if ($rsPem) {
     while ($row = $rsPem->fetch_assoc()) {

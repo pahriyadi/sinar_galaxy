@@ -93,7 +93,7 @@ $sql_pemesanan = "SELECT
     pm.no_plat_id,
     dt.kelas,
     COUNT(*) as jumlah_transaksi,
-    SUM(pm.harga_id) as total_pendapatan,
+    SUM(pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as total_pendapatan,
     COUNT(DISTINCT pm.tanggal_berangkat) as jumlah_keberangkatan
 FROM data_pemesanan pm
 LEFT JOIN data_travel dt ON pm.no_plat_id = dt.no_plat
@@ -217,7 +217,7 @@ function _push_travel(&$rekap, $plat, $kelas, $jenis, $amount, $tglKeberangkatan
 
 // ======================== PEMESANAN =====================
 if ($jenis_transaksi !== 'paket') {
-    $sqlPemesanan = "SELECT pm.payment_methods, pm.harga_id, pm.no_plat_id, pm.tanggal_berangkat, pm.tanggal_pemesanan
+    $sqlPemesanan = "SELECT pm.payment_methods, (pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as harga_id, pm.no_plat_id, pm.tanggal_berangkat, pm.tanggal_pemesanan
                      FROM data_pemesanan pm $whereRolePemesanan";
     $res = mysqli_query($conn, $sqlPemesanan);
     while ($row = mysqli_fetch_assoc($res)) {

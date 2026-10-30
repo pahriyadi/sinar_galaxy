@@ -62,7 +62,7 @@ $sql_pemesanan = "SELECT
     mp.metode_pembayaran,
     sp.status_pembayaran,
     COUNT(*) as jumlah_transaksi,
-    SUM(pm.harga_id) as total_pendapatan
+    SUM(pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as total_pendapatan
 FROM data_pemesanan pm
 LEFT JOIN data_rekening dr ON pm.jenis_rekening_id = dr.id_rekening
 LEFT JOIN data_metode_pembayaran mp ON pm.metode_pembayaran_id = mp.id_metode_pembayaran
@@ -160,7 +160,7 @@ if ($no_rekening) {
 
 // ======================== PEMESANAN (Tiket) =====================
 if ($jenis_transaksi !== 'paket') {
-    $sqlPemesanan = "SELECT pm.payment_methods, pm.harga_id, pm.metode_pembayaran_id, pm.jenis_rekening_id, pm.status_pembayaran_id, pm.tanggal_pemesanan
+    $sqlPemesanan = "SELECT pm.payment_methods, (pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as harga_id, pm.metode_pembayaran_id, pm.jenis_rekening_id, pm.status_pembayaran_id, pm.tanggal_pemesanan
                      FROM data_pemesanan pm $whereRolePemesanan";
     $res = mysqli_query($conn, $sqlPemesanan);
     while ($row = mysqli_fetch_assoc($res)) {

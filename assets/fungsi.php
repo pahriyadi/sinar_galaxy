@@ -341,8 +341,9 @@ function tambahTravel($data) {
     $no_plat = mysqli_real_escape_string($conn, $data['no_plat']);
     $kelas = mysqli_real_escape_string($conn, $data['kelas']);
     $harga = (float)$data['harga'];
+    $biaya_jemput_carter = isset($data['biaya_jemput_carter']) ? (float)$data['biaya_jemput_carter'] : 150000.00;
     $jumlah_kursi = (int)$data['jumlah_kursi'];
-    $sql = "INSERT INTO data_travel (no_plat, kelas, harga, jumlah_kursi) VALUES ('$no_plat', '$kelas', $harga, $jumlah_kursi)";
+    $sql = "INSERT INTO data_travel (no_plat, kelas, harga, biaya_jemput_carter, jumlah_kursi) VALUES ('$no_plat', '$kelas', $harga, $biaya_jemput_carter, $jumlah_kursi)";
     return confirmQuery(mysqli_query($conn, $sql));
 }
 
@@ -353,8 +354,9 @@ function updateTravel($data) {
     $no_plat = mysqli_real_escape_string($conn, $data['no_plat']);
     $kelas = mysqli_real_escape_string($conn, $data['kelas']);
     $harga = (float)$data['harga'];
+    $biaya_jemput_carter = isset($data['biaya_jemput_carter']) ? (float)$data['biaya_jemput_carter'] : 150000.00;
     $jumlah_kursi = (int)$data['jumlah_kursi'];
-    $sql = "UPDATE data_travel SET no_plat = '$no_plat', kelas = '$kelas', harga = $harga, jumlah_kursi = $jumlah_kursi WHERE id_travel = $id";
+    $sql = "UPDATE data_travel SET no_plat = '$no_plat', kelas = '$kelas', harga = $harga, biaya_jemput_carter = $biaya_jemput_carter, jumlah_kursi = $jumlah_kursi WHERE id_travel = $id";
     return confirmQuery(mysqli_query($conn, $sql));
 }
 
@@ -613,30 +615,51 @@ function tambahPemesanan($data) {
 
         $ketAsli = isset($data['keterangan']) ? trim($data['keterangan']) : '';
         $seatListStr = implode(', ', $seats);
-        $isCarter = ($seatCount >= 9);
-        $tagMulti = $isCarter ? "[Carter 1 Unit: $seatCount Kursi ($seatListStr)]" : "[Pemesanan Rombongan: $seatCount Kursi ($seatListStr)]";
+        $isCarter = !empty($data['is_carter_unit']) || ($seatCount >= 7 && isset($data['biaya_jemput_carter']) && (float)$data['biaya_jemput_carter'] > 0) || ($seatCount >= 9);
+        $biayaJemputCarter = ($isCarter && isset($data['biaya_jemput_carter'])) ? (float)$data['biaya_jemput_carter'] : 0.00;
+        $kodeGroupCarter = ($isCarter ? 'CRT-' : 'RMB-') . date('YmdHis') . '-' . rand(100, 999);
+
+        $jemputNote = ($biayaJemputCarter > 0) ? " | +Jemput/Antar Internal: Rp " . number_format($biayaJemputCarter, 0, ',', '.') : "";
+        $tagMulti = $isCarter ? "[Carter 1 Unit: $seatCount Kursi ($seatListStr)$jemputNote]" : "[Pemesanan Rombongan: $seatCount Kursi ($seatListStr)]";
 
         $originalPaymentMethods = isset($data['payment_methods']) && is_array($data['payment_methods']) ? $data['payment_methods'] : null;
+        $grandTotalTagihan = $totalHarga + $biayaJemputCarter;
 
         $firstInsertId = null;
         foreach ($seats as $idx => $seatNum) {
             $seatData = $data;
             $seatData['kursi'] = $seatNum;
-            // Alokasikan harga: selisih pembagian diberikan ke baris pertama
-            $seatData['harga_id'] = ($idx === 0) ? ($hargaPerKursi + $sisaHarga) : $hargaPerKursi;
+            // Harga tiket murni per kursi (untuk E-Tiket)
+            $seatHargaTiket = ($idx === 0) ? ($hargaPerKursi + $sisaHarga) : $hargaPerKursi;
+            // Biaya jemput carter disimpan pada kursi pertama sebagai catatan pendapatan internal
+            $seatBiayaJemput = ($idx === 0) ? $biayaJemputCarter : 0.00;
+
+            $seatData['harga_id'] = $seatHargaTiket;
+            $seatData['biaya_jemput_carter'] = $seatBiayaJemput;
+            $seatData['kode_group_carter'] = $kodeGroupCarter;
             $seatData['keterangan'] = !empty($ketAsli) ? ($ketAsli . ' ' . $tagMulti) : $tagMulti;
             unset($seatData['kursi_list_json']);
 
-            // Alokasikan pembayaran berganda secara proporsional jika ada
+            // Alokasikan pembayaran berganda secara proporsional terhadap tagihan kursi + jemput
             if ($originalPaymentMethods) {
                 $proportionalMethods = [];
+                $seatBill = $seatHargaTiket + $seatBiayaJemput;
                 foreach ($originalPaymentMethods as $pm) {
                     $amtTotal = (float)($pm['amount'] ?? 0);
-                    $amtPerSeat = floor($amtTotal / $seatCount);
-                    $amtSisa = $amtTotal - ($amtPerSeat * $seatCount);
+                    if ($grandTotalTagihan > 0) {
+                        // Hitung porsi proporsional untuk kursi biasa vs kursi pertama
+                        $normalSeatBill = $hargaPerKursi;
+                        $amtNormalSeat = floor($amtTotal * ($normalSeatBill / $grandTotalTagihan));
+                        $amtFirstSeat = $amtTotal - ($amtNormalSeat * ($seatCount - 1));
+                        $allocatedAmt = ($idx === 0) ? $amtFirstSeat : $amtNormalSeat;
+                    } else {
+                        $amtPerSeat = floor($amtTotal / $seatCount);
+                        $amtSisa = $amtTotal - ($amtPerSeat * $seatCount);
+                        $allocatedAmt = ($idx === 0) ? ($amtPerSeat + $amtSisa) : $amtPerSeat;
+                    }
                     $proportionalMethods[] = [
                         'method_id' => $pm['method_id'] ?? '',
-                        'amount' => ($idx === 0) ? ($amtPerSeat + $amtSisa) : $amtPerSeat,
+                        'amount' => $allocatedAmt,
                         'rekening_id' => $pm['rekening_id'] ?? '',
                         'payment_date' => $pm['payment_date'] ?? ''
                     ];
@@ -703,6 +726,9 @@ function _insertSinglePemesanan($data) {
     $username = isset($data['username']) ? mysqli_real_escape_string($conn, $data['username']) : '';
     $asal_po = isset($data['asal_po']) ? mysqli_real_escape_string($conn, $data['asal_po']) : '';
     $keterangan = isset($data['keterangan']) ? mysqli_real_escape_string($conn, $data['keterangan']) : '';
+    $kode_group_carter = !empty($data['kode_group_carter']) ? mysqli_real_escape_string($conn, $data['kode_group_carter']) : '';
+    $biaya_jemput_carter = isset($data['biaya_jemput_carter']) ? (float)$data['biaya_jemput_carter'] : 0.00;
+    $total_tagihan_internal = (float)$harga_id + $biaya_jemput_carter;
 
     // Handle multiple payment methods
     $payment_methods = [];
@@ -722,10 +748,10 @@ function _insertSinglePemesanan($data) {
             }
         }
         
-        // Validasi jumlah pembayaran vs harga tiket
-        $diff = $total_amount - (float)$harga_id;
+        // Validasi jumlah pembayaran vs total tagihan internal (harga tiket + biaya jemput carter)
+        $diff = $total_amount - $total_tagihan_internal;
         if ($diff > 0.01) {
-            die('SQL Error: Total pembayaran melebihi harga tiket!');
+            die('SQL Error: Total pembayaran melebihi total tagihan!');
         }
         if ($diff < -0.01) {
             // Izinkan hanya jika status pembayaran DP/Piutang
@@ -749,10 +775,10 @@ function _insertSinglePemesanan($data) {
             $metode_pembayaran_id = $payment_methods[0]['method_id'];
         }
     } else {
-        // Fallback to single payment method (backward compatibility)
+        // Fallback to single payment method (termasuk biaya_jemput_carter jika ada pada baris ini)
         $payment_methods = [[
             'method_id' => (int)$metode_pembayaran_id,
-            'amount' => (float)$harga_id,
+            'amount' => $total_tagihan_internal,
             'rekening_id' => (int)$jenis_rekening_id,
             'payment_date' => substr($tanggal_pembayaran, 0, 10)
         ]];
@@ -786,10 +812,11 @@ function _insertSinglePemesanan($data) {
     }
 
     $jam_escaped = !empty($jam_keberangkatan) ? "'$jam_keberangkatan'" : "NULL";
+    $kode_carter_sql = !empty($kode_group_carter) ? "'$kode_group_carter'" : "NULL";
     $sql = "INSERT INTO data_pemesanan (
-        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, jam_keberangkatan, no_plat_id, kelas_id, harga_id, kursi, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, username, asal_po, keterangan
+        nip_sgt_id, nama_id, alamat_id, no_ktp_id, no_hp_id, tanggal_pemesanan, tanggal_pembayaran, tanggal_berangkat, jam_keberangkatan, no_plat_id, kelas_id, harga_id, kursi, tujuan_id, status_pembayaran_id, metode_pembayaran_id, jenis_rekening_id, payment_methods, payment_details, username, asal_po, keterangan, kode_group_carter, biaya_jemput_carter
     ) VALUES (
-        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pemesanan', '$tanggal_pembayaran', '$tanggal_berangkat', $jam_escaped, '$no_plat_id', '$kelas_id', '$harga_id', $kursi, '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', '$username', '$asal_po', '$keterangan'
+        '$nip_sgt_id', '$nama_id', '$alamat_id', '$no_ktp_id', '$no_hp_id', '$tanggal_pemesanan', '$tanggal_pembayaran', '$tanggal_berangkat', $jam_escaped, '$no_plat_id', '$kelas_id', '$harga_id', $kursi, '$tujuan_id', '$status_pembayaran_id', '$metode_pembayaran_id', '$jenis_rekening_id', '$payment_methods_json', '$payment_details', '$username', '$asal_po', '$keterangan', $kode_carter_sql, $biaya_jemput_carter
     )";
     $result = confirmQuery(mysqli_query($conn, $sql));
     if ($result) {

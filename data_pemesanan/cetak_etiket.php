@@ -70,6 +70,140 @@ if (!empty($id_pemesanan)) {
     }
 }
 
+// Deteksi Carter 1 Unit & Mode Tampilan E-Tiket (Default: 'single' / Perorangan, Opsi Tombol: 'carter' / Gabungan)
+$mode_etiket = isset($_GET['mode']) ? strtolower(trim($_GET['mode'])) : 'single';
+$hasCarterDetected = false;
+$carterTotalSeatsCount = 0;
+$urlModeCarter = '';
+$urlModeSingle = '';
+
+if (!empty($tickets)) {
+    // Bersihkan catatan internal jemput/antar dari keterangan di semua tiket agar tidak tampil di E-Tiket
+    foreach ($tickets as &$cleanRow) {
+        if (!empty($cleanRow['keterangan'])) {
+            $cleanRow['keterangan'] = preg_replace('/\s*\|\s*\+Jemput\/Antar Internal:[^\]]*/i', '', $cleanRow['keterangan']);
+        }
+    }
+    unset($cleanRow);
+
+    // Cek apakah salah satu tiket yang dibuka merupakan bagian dari Carter 1 Unit
+    foreach ($tickets as $tRow) {
+        $kodeCarter = trim($tRow['kode_group_carter'] ?? '');
+        $ketStr = $tRow['keterangan'] ?? '';
+        if ((strpos($kodeCarter, 'CRT-') === 0) || (stripos($ketStr, '[Carter 1 Unit') !== false)) {
+            $hasCarterDetected = true;
+            if (!empty($kodeCarter)) {
+                $kcEsc = mysqli_real_escape_string($conn, $kodeCarter);
+                $wCnt = "pm.kode_group_carter = '$kcEsc'";
+            } else {
+                $pEsc = mysqli_real_escape_string($conn, $tRow['no_plat_id']);
+                $tbEsc = mysqli_real_escape_string($conn, $tRow['tanggal_berangkat']);
+                $nmEsc = mysqli_real_escape_string($conn, $tRow['nama_id']);
+                $wCnt = "pm.no_plat_id = '$pEsc' AND pm.tanggal_berangkat = '$tbEsc' AND pm.nama_id = '$nmEsc' AND pm.keterangan LIKE '%[Carter 1 Unit%'";
+            }
+            $resCnt = mysqli_query($conn, "SELECT COUNT(*) as cnt FROM data_pemesanan pm WHERE $wCnt");
+            if ($resCnt && ($rCnt = mysqli_fetch_assoc($resCnt))) {
+                $carterTotalSeatsCount = (int)$rCnt['cnt'];
+            }
+            break;
+        }
+    }
+
+    if ($hasCarterDetected) {
+        $qParams = $_GET;
+        $qParams['mode'] = 'carter';
+        $urlModeCarter = '?' . http_build_query($qParams);
+        $qParams['mode'] = 'single';
+        $urlModeSingle = '?' . http_build_query($qParams);
+    }
+
+    // Hanya gabungkan E-Tiket jika user mengklik tombol E-Tiket Gabungan (mode=carter)
+    if ($hasCarterDetected && $mode_etiket === 'carter') {
+        $consolidatedTickets = [];
+        $processedCarterGroups = [];
+        $processedRowIds = [];
+
+        foreach ($tickets as $tRow) {
+            $rowId = (int)$tRow['id_pemesanan'];
+            if (isset($processedRowIds[$rowId])) continue;
+
+            $kodeCarter = trim($tRow['kode_group_carter'] ?? '');
+            $ketStr = $tRow['keterangan'] ?? '';
+            $isCarterRow = (strpos($kodeCarter, 'CRT-') === 0) || (stripos($ketStr, '[Carter 1 Unit') !== false);
+
+            if ($isCarterRow) {
+                $groupKey = !empty($kodeCarter) ? $kodeCarter : ('LEGACY_CRT_' . $tRow['no_plat_id'] . '_' . $tRow['tanggal_berangkat'] . '_' . $tRow['nama_id']);
+                if (isset($processedCarterGroups[$groupKey])) {
+                    continue;
+                }
+                $processedCarterGroups[$groupKey] = true;
+
+                if (!empty($kodeCarter)) {
+                    $kcEsc = mysqli_real_escape_string($conn, $kodeCarter);
+                    $whereGroup = "pm.kode_group_carter = '$kcEsc'";
+                } else {
+                    $pEsc = mysqli_real_escape_string($conn, $tRow['no_plat_id']);
+                    $tbEsc = mysqli_real_escape_string($conn, $tRow['tanggal_berangkat']);
+                    $nmEsc = mysqli_real_escape_string($conn, $tRow['nama_id']);
+                    $whereGroup = "pm.no_plat_id = '$pEsc' AND pm.tanggal_berangkat = '$tbEsc' AND pm.nama_id = '$nmEsc' AND pm.keterangan LIKE '%[Carter 1 Unit%'";
+                }
+
+                $sqlGroup = "SELECT pm.*, 
+                                    dt.kelas, dt.jumlah_kursi,
+                                    tj.nama_tujuan,
+                                    sp.status_pembayaran,
+                                    mp.metode_pembayaran,
+                                    dr.nama_rekening, dr.nomor_rekening,
+                                    du.username as nama_kasir, du.asal_po as asal_po_kasir
+                             FROM data_pemesanan pm
+                             LEFT JOIN data_travel dt ON pm.no_plat_id = dt.no_plat
+                             LEFT JOIN data_tujuan_perjalanan tj ON pm.tujuan_id = tj.id_tujuan_perjalanan
+                             LEFT JOIN data_status_pembayaran sp ON pm.status_pembayaran_id = sp.id_status_pembayaran
+                             LEFT JOIN data_metode_pembayaran mp ON pm.metode_pembayaran_id = mp.id_metode_pembayaran
+                             LEFT JOIN data_rekening dr ON pm.jenis_rekening_id = dr.id_rekening
+                             LEFT JOIN data_users du ON pm.username = du.id_users
+                             WHERE $whereGroup
+                             ORDER BY pm.kursi ASC, pm.id_pemesanan ASC";
+                $resGroup = mysqli_query($conn, $sqlGroup);
+                $groupRows = [];
+                if ($resGroup) {
+                    while ($gRow = mysqli_fetch_assoc($resGroup)) {
+                        $groupRows[] = $gRow;
+                        $processedRowIds[(int)$gRow['id_pemesanan']] = true;
+                    }
+                }
+
+                if (count($groupRows) > 1) {
+                    $baseTicket = $groupRows[0];
+                    $seatNums = [];
+                    $totalHargaTiketMurni = 0;
+                    $hargaSatuan = (float)($groupRows[0]['harga_id'] ?? 0);
+                    foreach ($groupRows as $gr) {
+                        $seatNums[] = (int)$gr['kursi'];
+                        $totalHargaTiketMurni += (float)($gr['harga_id'] ?? 0);
+                    }
+                    sort($seatNums);
+                    $jmlKursiCarter = count($seatNums);
+                    $baseTicket['kursi'] = implode(', ', $seatNums) . ' (CARTER ' . $jmlKursiCarter . ' KURSI)';
+                    $baseTicket['kursi_short'] = 'CARTER ' . $jmlKursiCarter . ' SEAT (' . min($seatNums) . '-' . max($seatNums) . ')';
+                    $baseTicket['harga_id'] = $totalHargaTiketMurni;
+                    $baseTicket['harga_satuan_carter'] = $hargaSatuan;
+                    $baseTicket['jumlah_kursi_carter'] = $jmlKursiCarter;
+                    $baseTicket['is_carter_merged'] = true;
+                    $baseTicket['keterangan'] = preg_replace('/\s*\|\s*\+Jemput\/Antar Internal:[^\]]*/i', '', $baseTicket['keterangan'] ?? '');
+                    $consolidatedTickets[] = $baseTicket;
+                    continue;
+                }
+            }
+
+            $processedRowIds[$rowId] = true;
+            $consolidatedTickets[] = $tRow;
+        }
+
+        $tickets = $consolidatedTickets;
+    }
+}
+
 // Master mapping jika dibutuhkan fallback
 $tujuanMap = [];
 $res = mysqli_query($conn, "SELECT id_tujuan_perjalanan, nama_tujuan FROM data_tujuan_perjalanan");
@@ -1387,6 +1521,17 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
 
     <!-- Share & Print Action Buttons -->
     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <?php if ($hasCarterDetected): ?>
+        <?php if ($mode_etiket === 'carter'): ?>
+          <a href="<?= htmlspecialchars($urlModeSingle) ?>" class="action-btn" style="background: #0f766e; color: #ffffff; text-decoration: none; box-shadow: 0 2px 8px rgba(15, 118, 110, 0.35);" title="Kembali ke tampilan E-Tiket Perorangan per kursi">
+            <i class="fas fa-user"></i> E-Tiket Perorangan
+          </a>
+        <?php else: ?>
+          <a href="<?= htmlspecialchars($urlModeCarter) ?>" class="action-btn" style="background: #7c3aed; color: #ffffff; text-decoration: none; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);" title="Terdeteksi Carter 1 Unit: Klik untuk menggabungkan seluruh kursi carter ke dalam 1 E-Tiket">
+            <i class="fas fa-layer-group"></i> E-Tiket Gabungan Carter<?= $carterTotalSeatsCount > 1 ? ' (' . $carterTotalSeatsCount . ' Kursi)' : '' ?>
+          </a>
+        <?php endif; ?>
+      <?php endif; ?>
       <button type="button" onclick="kirimWhatsAppLangsung(0)" class="action-btn" style="background: #25D366; color: #ffffff; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);" title="Kirim langsung ke WhatsApp pelanggan: <?= htmlspecialchars($firstNama . (!empty($firstHp) ? ' (' . $firstHp . ')' : '')) ?>">
         <i class="fab fa-whatsapp" style="font-size: 15px;"></i> Kirim WA <?= !empty($firstHp) && count($tickets) === 1 ? '(' . htmlspecialchars($firstHp) . ')' : 'Pelanggan' ?>
       </button>
@@ -1477,8 +1622,13 @@ if (!file_exists(__DIR__ . '/' . $busImage)) {
       }
 
       $hargaTiket = (float)($t['harga_id'] ?? 0);
-      $hargaTiketDisplay = 'Rp. ' . number_format($hargaTiket, 0, ',', '.');
-      $hargaTiketSimple = 'Rp ' . number_format($hargaTiket, 0, ',', '.');
+      if (!empty($t['is_carter_merged']) && !empty($t['jumlah_kursi_carter'])) {
+        $hargaTiketDisplay = 'Rp. ' . number_format($hargaTiket, 0, ',', '.') . ' (' . $t['jumlah_kursi_carter'] . ' Kursi x Rp ' . number_format($t['harga_satuan_carter'] ?? 0, 0, ',', '.') . ')';
+        $hargaTiketSimple = 'Rp ' . number_format($hargaTiket, 0, ',', '.') . ' (' . $t['jumlah_kursi_carter'] . ' Seat)';
+      } else {
+        $hargaTiketDisplay = 'Rp. ' . number_format($hargaTiket, 0, ',', '.');
+        $hargaTiketSimple = 'Rp ' . number_format($hargaTiket, 0, ',', '.');
+      }
 
       // Informasi Pembayaran
       $metodePembayaran = !empty($t['metode_pembayaran']) ? $t['metode_pembayaran'] : ($metodeMap[$t['metode_pembayaran_id']] ?? 'Transfer Bank / Cash');

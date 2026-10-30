@@ -133,7 +133,7 @@ try {
 
     // Proses data pemesanan dan pengiriman dengan error handling
     if ($jenis_transaksi !== 'paket') {
-        $sqlPemesanan = "SELECT pm.username, pm.payment_methods, pm.harga_id, pm.metode_pembayaran_id, pm.jenis_rekening_id, pm.status_pembayaran_id, pm.tanggal_pemesanan, pm.no_plat_id, pm.tujuan_id FROM data_pemesanan pm $whereRolePemesanan";
+        $sqlPemesanan = "SELECT pm.username, pm.payment_methods, (pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as harga_id, pm.metode_pembayaran_id, pm.jenis_rekening_id, pm.status_pembayaran_id, pm.tanggal_pemesanan, pm.no_plat_id, pm.tujuan_id FROM data_pemesanan pm $whereRolePemesanan";
         $res = mysqli_query($conn, $sqlPemesanan);
         if ($res) {
             while ($row = mysqli_fetch_assoc($res)) {

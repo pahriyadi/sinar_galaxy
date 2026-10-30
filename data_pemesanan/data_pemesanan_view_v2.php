@@ -664,9 +664,33 @@ if ($result) {
                   </div>
                   <div class="col-md-3">
                     <div class="form-group mb-1">
-                      <label class="text-xs font-weight-bold text-muted mb-1" for="harga_id">Tarif / Total Harga (Rp) <span class="text-danger">*</span></label>
+                      <label class="text-xs font-weight-bold text-muted mb-1" for="harga_id">Tarif / Total Tiket (Rp) <span class="text-danger">*</span></label>
                       <input type="number" class="form-control form-control-sm font-weight-bold" name="harga_id" id="harga_id" min="0" placeholder="Rp 0" required>
                       <div id="hargaCalcContainer" class="mt-1 text-xs text-muted font-weight-bold" style="display: none;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Panel Khusus Carter 1 Unit: Biaya Jemput / Antar (Catatan Pendapatan Internal) -->
+                <div id="carterJemputPanel" class="mt-2 p-2 rounded" style="display: none; background: #fffbeb; border: 1px solid #f59e0b;">
+                  <input type="hidden" name="is_carter_unit" id="is_carter_unit" value="0">
+                  <div class="row align-items-center">
+                    <div class="col-md-7">
+                      <div class="font-weight-bold text-xs" style="color: #92400e;">
+                        <i class="fas fa-shuttle-van mr-1"></i> Biaya Penjemputan / Pengantaran Carteran (Catatan Internal)
+                      </div>
+                      <small class="text-muted d-block" style="font-size: 11px;">
+                        Terhubung dinamis dari Master Armada &amp; fleksibel disesuaikan. <strong>Tidak disatukan di dalam E-Tiket</strong> (hanya dicatat sebagai pendapatan internal).
+                      </small>
+                    </div>
+                    <div class="col-md-5">
+                      <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text font-weight-bold" style="background: #fef3c7; color: #92400e; border-color: #f59e0b;">Rp</span>
+                        </div>
+                        <input type="number" class="form-control form-control-sm font-weight-bold" name="biaya_jemput_carter" id="biaya_jemput_carter" min="0" value="0" style="border-color: #f59e0b; color: #92400e;">
+                      </div>
+                      <div id="totalTagihanInternalHelp" class="text-right mt-1 font-weight-bold" style="font-size: 11px; color: #076e34;"></div>
                     </div>
                   </div>
                 </div>
@@ -1401,22 +1425,52 @@ if ($result) {
         }
       }
 
+      function getGrandTotalInternal() {
+        var ticketPrice = parseFloat($('#harga_id').val()) || 0;
+        var isCarter = ($('#is_carter_unit').val() === '1');
+        var carterJemput = isCarter ? (parseFloat($('#biaya_jemput_carter').val()) || 0) : 0;
+        return ticketPrice + carterJemput;
+      }
+
+      function syncNominalBayarKasir() {
+        var ticketPrice = parseFloat($('#harga_id').val()) || 0;
+        var isCarter = ($('#is_carter_unit').val() === '1');
+        var carterJemput = isCarter ? (parseFloat($('#biaya_jemput_carter').val()) || 0) : 0;
+        var grandTotal = ticketPrice + carterJemput;
+
+        if (isCarter) {
+          $('#totalTagihanInternalHelp').html(
+            '<i class="fas fa-wallet mr-1"></i> Total Tagihan Kasir (Tiket + Jemput): Rp ' + Number(grandTotal).toLocaleString('id-ID')
+          );
+        } else {
+          $('#totalTagihanInternalHelp').empty();
+        }
+
+        if ($('#payment_type').val() === 'single') {
+          $('#single_amount').val(grandTotal);
+        } else if ($('#payment_type').val() === 'multiple') {
+          calculateTotal();
+        }
+      }
+
       function autofillTravel() {
         var noPlat = document.getElementById('no_plat_id').value;
         if (noPlat === 'BELUM DITENTUKAN') {
           document.getElementById('kelas_id').value = 'BELUM DITENTUKAN';
           window.baseUnitPrice = 180000;
+          window.baseCarterJemputPrice = 150000;
           let count = (pickerSelectedSeats && pickerSelectedSeats.length > 0) ? pickerSelectedSeats.length : 1;
           let total = window.baseUnitPrice * count;
           document.getElementById('harga_id').value = total;
-          if ($('#single_amount').length && $('#payment_type').val() === 'single') {
-            $('#single_amount').val(total);
+          if ($('#is_carter_unit').val() === '1') {
+            $('#biaya_jemput_carter').val(window.baseCarterJemputPrice);
           }
+          syncNominalBayarKasir();
           if (count > 1) {
             $('#hargaCalcContainer').html(
               '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
               count + ' Kursi &times; Rp ' + Number(window.baseUnitPrice).toLocaleString('id-ID') + 
-              ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + '</span>'
+              ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + ' (E-Tiket)</span>'
             ).show();
           } else {
             $('#hargaCalcContainer').hide().empty();
@@ -1430,17 +1484,19 @@ if ($result) {
               if (data && !data.error) {
                 document.getElementById('kelas_id').value = data.kelas || '';
                 window.baseUnitPrice = parseFloat(data.harga) || 0;
+                window.baseCarterJemputPrice = (data.biaya_jemput_carter !== undefined) ? (parseFloat(data.biaya_jemput_carter) || 0) : 150000;
                 let count = (pickerSelectedSeats && pickerSelectedSeats.length > 0) ? pickerSelectedSeats.length : 1;
                 let total = window.baseUnitPrice > 0 ? (window.baseUnitPrice * count) : (data.harga || '');
                 document.getElementById('harga_id').value = total;
-                if ($('#single_amount').length && $('#payment_type').val() === 'single') {
-                  $('#single_amount').val(total);
+                if ($('#is_carter_unit').val() === '1') {
+                  $('#biaya_jemput_carter').val(window.baseCarterJemputPrice);
                 }
+                syncNominalBayarKasir();
                 if (count > 1 && window.baseUnitPrice > 0) {
                   $('#hargaCalcContainer').html(
                     '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
                     count + ' Kursi &times; Rp ' + Number(window.baseUnitPrice).toLocaleString('id-ID') + 
-                    ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + '</span>'
+                    ' = <span class="text-success font-weight-bold">Rp ' + Number(total).toLocaleString('id-ID') + ' (E-Tiket)</span>'
                   ).show();
                 } else {
                   $('#hargaCalcContainer').hide().empty();
@@ -1449,6 +1505,7 @@ if ($result) {
                 document.getElementById('kelas_id').value = '';
                 document.getElementById('harga_id').value = '';
                 window.baseUnitPrice = 0;
+                window.baseCarterJemputPrice = 150000;
                 $('#hargaCalcContainer').hide().empty();
               }
             })
@@ -1456,12 +1513,14 @@ if ($result) {
               document.getElementById('kelas_id').value = '';
               document.getElementById('harga_id').value = '';
               window.baseUnitPrice = 0;
+              window.baseCarterJemputPrice = 150000;
               $('#hargaCalcContainer').hide().empty();
             });
         } else {
           document.getElementById('kelas_id').value = '';
           document.getElementById('harga_id').value = '';
           window.baseUnitPrice = 0;
+          window.baseCarterJemputPrice = 150000;
           $('#hargaCalcContainer').hide().empty();
         }
       }
@@ -1592,6 +1651,9 @@ if ($result) {
         $('#multiSeatControlPanel').hide();
         $('#seatMultiBadgeContainer').hide().empty();
         $('#hargaCalcContainer').hide().empty();
+        $('#is_carter_unit').val('0');
+        $('#biaya_jemput_carter').val('0');
+        $('#carterJemputPanel').hide();
         $('#modalForm').modal('show');
       });
 
@@ -1610,10 +1672,16 @@ if ($result) {
         $('#modalFormLabel').html('<i class="fas fa-plus-circle mr-2"></i> Tambah Pemesanan');
         pickerSelectedSeats = [];
         window.baseUnitPrice = 0;
+        window.baseCarterJemputPrice = 150000;
         window.previousMultiCount = 0;
+        window.isCarterButtonClicked = false;
         $('#kursi_list_json').val('');
         $('#seatMultiBadgeContainer').hide().empty();
         $('#hargaCalcContainer').hide().empty();
+        $('#is_carter_unit').val('0');
+        $('#biaya_jemput_carter').val('0');
+        $('#carterJemputPanel').hide();
+        $('#totalTagihanInternalHelp').empty();
         $('#chkMultiSeat').prop('checked', false);
         $('#multiSeatControlPanel').show();
       });
@@ -1628,7 +1696,7 @@ if ($result) {
           $('#wrapper_tanggal_pembayaran').show();
           $('#metode_pembayaran_id').prop('required', true);
           $('#tanggal_pembayaran').prop('required', true);
-          $('#single_amount').val($('#harga_id').val());
+          $('#single_amount').val(getGrandTotalInternal());
         } else if (paymentType === 'multiple') {
           $('#singlePaymentMethod').hide();
           $('#multiplePaymentMethod').show();
@@ -1743,8 +1811,8 @@ if ($result) {
         });
         $('#total_payment_amount').val(total);
 
-        // Validate against ticket price
-        var ticketPrice = parseFloat($('#harga_id').val()) || 0;
+        // Validate against total internal bill (ticket price + carter pickup if carter)
+        var ticketPrice = getGrandTotalInternal();
         if (total > ticketPrice + 0.01) {
           $('#total_payment_amount').addClass('is-invalid');
           $('#total_payment_amount').next('.invalid-feedback').remove();
@@ -1864,11 +1932,9 @@ if ($result) {
         }
       }
 
-      // Update single amount when harga changes
-      $('#harga_id').on('change', function () {
-        if ($('#payment_type').val() === 'single') {
-          $('#single_amount').val($(this).val());
-        }
+      // Update single amount and internal total when harga or biaya_jemput_carter changes
+      $('#harga_id, #biaya_jemput_carter').on('input change', function () {
+        syncNominalBayarKasir();
       });
 
       // Handle delete button
@@ -2769,6 +2835,7 @@ if ($result) {
           return;
         }
 
+        window.isCarterButtonClicked = true;
         $('#chkMultiSeat').prop('checked', true);
         pickerSelectedSeats = availableSeats.sort(function(a, b) { return a - b; });
         $('.picker-seat-box').removeClass('seat-selected');
@@ -2780,6 +2847,7 @@ if ($result) {
 
       // Tombol Reset Pilihan Kursi
       $('#btnResetSelectedSeats').off('click').on('click', function() {
+        window.isCarterButtonClicked = false;
         pickerSelectedSeats = [];
         $('.picker-seat-box').removeClass('seat-selected');
         updatePickerSelectionLabel();
@@ -2846,20 +2914,32 @@ if ($result) {
         $('#kursi_list_json').val(JSON.stringify(pickerSelectedSeats));
 
         let totalAvail = $('.picker-seat-box[data-status="available"]').length;
-        let isCarter = (count > 1 && totalAvail > 0 && count === totalAvail);
+        let isCarter = (count > 1 && totalAvail > 0 && count === totalAvail) || (window.isCarterButtonClicked && count > 1);
 
         // Tampilkan badge indikator di form input kursi
         if (count > 1) {
           let badgeHtml = '<span class="badge badge-primary mr-1 font-weight-bold"><i class="fas fa-users mr-1"></i>' + count + ' Kursi Dipilih</span>';
           if (isCarter) {
-            badgeHtml += '<span class="badge badge-warning text-dark font-weight-bold"><i class="fas fa-bus mr-1"></i>Carter 1 Unit</span>';
+            badgeHtml += '<span class="badge badge-warning text-dark font-weight-bold"><i class="fas fa-bus mr-1"></i>Carter 1 Unit (E-Tiket Gabungan)</span>';
           }
           $('#seatMultiBadgeContainer').html(badgeHtml).show();
         } else {
           $('#seatMultiBadgeContainer').hide().empty();
         }
 
-        // Kalkulasi tarif otomatis jika baseUnitPrice tersedia
+        // Aktifkan / nonaktifkan Panel Biaya Jemput Carteran
+        if (isCarter) {
+          $('#is_carter_unit').val('1');
+          let defaultJemput = (window.baseCarterJemputPrice !== undefined) ? window.baseCarterJemputPrice : 150000;
+          $('#biaya_jemput_carter').val(defaultJemput);
+          $('#carterJemputPanel').slideDown(150);
+        } else {
+          $('#is_carter_unit').val('0');
+          $('#biaya_jemput_carter').val('0');
+          $('#carterJemputPanel').slideUp(150);
+        }
+
+        // Kalkulasi tarif tiket otomatis jika baseUnitPrice tersedia
         let basePrice = window.baseUnitPrice || 0;
         if (!basePrice) {
           let currentTotal = parseFloat($('#harga_id').val()) || 0;
@@ -2871,17 +2951,18 @@ if ($result) {
 
         if (basePrice > 0 && count > 0) {
           let totalHarga = basePrice * count;
-          $('#harga_id').val(totalHarga).trigger('change');
+          $('#harga_id').val(totalHarga);
           if (count > 1) {
             $('#hargaCalcContainer').html(
               '<i class="fas fa-calculator mr-1 text-primary"></i> ' + 
               count + ' Kursi &times; Rp ' + Number(basePrice).toLocaleString('id-ID') + 
-              ' = <span class="text-success font-weight-bold">Rp ' + Number(totalHarga).toLocaleString('id-ID') + '</span>'
+              ' = <span class="text-success font-weight-bold">Rp ' + Number(totalHarga).toLocaleString('id-ID') + ' (E-Tiket)</span>'
             ).show();
           } else {
             $('#hargaCalcContainer').hide().empty();
           }
         }
+        syncNominalBayarKasir();
         window.previousMultiCount = count;
 
         $('#modalSeatPicker').modal('hide');

@@ -39,7 +39,7 @@ $sql_pendapatan = "SELECT
     mp.metode_pembayaran,
     sp.status_pembayaran,
     COUNT(*) as transaksi,
-    SUM(pm.harga_id) as total
+    SUM(pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as total
 FROM data_pemesanan pm
 LEFT JOIN data_rekening dr ON pm.jenis_rekening_id = dr.id_rekening
 LEFT JOIN data_metode_pembayaran mp ON pm.metode_pembayaran_id = mp.id_metode_pembayaran
@@ -128,7 +128,7 @@ if($role!=='super admin'){
 }
 
 // ---------- Pendapatan Pemesanan & Pengiriman ----------
-$sqlPem = "SELECT pm.payment_methods, pm.harga_id, pm.jenis_rekening_id, pm.metode_pembayaran_id, sp.status_pembayaran, pm.tanggal_pemesanan
+$sqlPem = "SELECT pm.payment_methods, (pm.harga_id + COALESCE(pm.biaya_jemput_carter, 0)) as harga_id, pm.jenis_rekening_id, pm.metode_pembayaran_id, sp.status_pembayaran, pm.tanggal_pemesanan
            FROM data_pemesanan pm
            LEFT JOIN data_status_pembayaran sp ON pm.status_pembayaran_id = sp.id_status_pembayaran".$wherePem;
 $res=mysqli_query($conn,$sqlPem);
